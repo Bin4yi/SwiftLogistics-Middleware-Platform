@@ -1,0 +1,40 @@
+  // services/driver-service/src/test/resources/application-test.yml
+  spring:
+    datasource:
+      url: jdbc:h2:mem:drivertestdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+      driver-class-name: org.h2.Driver
+      username: sa
+      password: password
+
+    jpa:
+      hibernate:
+        ddl-auto: create-drop
+      show-sql: false
+
+    rabbitmq:
+      host: localhost
+      port: 5672
+      username: guest
+      password: guest
+
+    redis:
+      host: localhost
+      port: 6379
+
+    cache:
+      type: simple
+
+  eureka:
+    client:
+      enabled: false
+
+  app:
+    jwt:
+      secret: test-jwt-secret-key
+      expiration: 86400000
+
+  logging:
+    level:
+      com.swiftlogistics.driver: INFO
+      org.springframework.amqp: WARN
+

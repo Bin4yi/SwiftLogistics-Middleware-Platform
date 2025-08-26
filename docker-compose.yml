@@ -29,11 +29,23 @@ services:
     networks:
       - swift-network
 
+  # Redis Cache
+  redis:
+    image: redis:6-alpine
+    container_name: swift-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - swift-network
+    command: redis-server --appendonly yes
+
   # Order Service
   order-service:
     build:
-      context: ./services/order-service  # Fixed path - relative to docker-compose.yml location
-      dockerfile: services/order-service/Dockerfile
+      context: ./services/order-service
+      dockerfile: Dockerfile
     container_name: swift-order-service
     ports:
       - "8081:8081"
@@ -48,7 +60,6 @@ services:
       - SPRING_RABBITMQ_HOST=rabbitmq
       - SPRING_RABBITMQ_USERNAME=swiftlogistics
       - SPRING_RABBITMQ_PASSWORD=logistics123
-      - EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE=http://eureka-server:8761/eureka/
     networks:
       - swift-network
     healthcheck:
@@ -58,9 +69,72 @@ services:
       retries: 3
       start_period: 40s
 
+  # Integration Service
+  integration-service:
+    build:
+      context: ./services/integration-service
+      dockerfile: Dockerfile
+    container_name: swift-integration-service
+    ports:
+      - "8082:8082"
+    depends_on:
+      - postgres
+      - rabbitmq
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/swiftlogistics
+      - SPRING_DATASOURCE_USERNAME=swift
+      - SPRING_DATASOURCE_PASSWORD=logistics123
+      - SPRING_RABBITMQ_HOST=rabbitmq
+      - SPRING_RABBITMQ_USERNAME=swiftlogistics
+      - SPRING_RABBITMQ_PASSWORD=logistics123
+    networks:
+      - swift-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8082/api/integration/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Driver Service
+  driver-service:
+    build:
+      context: ./services/driver-service
+      dockerfile: Dockerfile
+    container_name: swift-driver-service
+    ports:
+      - "8083:8083"
+    depends_on:
+      - postgres
+      - rabbitmq
+      - redis
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/swiftlogistics
+      - SPRING_DATASOURCE_USERNAME=swift
+      - SPRING_DATASOURCE_PASSWORD=logistics123
+      - SPRING_RABBITMQ_HOST=rabbitmq
+      - SPRING_RABBITMQ_USERNAME=swiftlogistics
+      - SPRING_RABBITMQ_PASSWORD=logistics123
+      - SPRING_REDIS_HOST=redis
+      - JWT_SECRET=swiftlogistics-production-jwt-secret-key-2024
+    volumes:
+      - driver_uploads:/app/uploads/drivers
+    networks:
+      - swift-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8083/api/drivers/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
 volumes:
   postgres_data:
   rabbitmq_data:
+  redis_data:
+  driver_uploads:
 
 networks:
   swift-network:
