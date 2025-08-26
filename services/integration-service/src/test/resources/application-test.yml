@@ -1,7 +1,4 @@
-// services/integration-service/src/test/resources/application-test.yml
-package com.swiftlogistics.integration;
-
-/*
+# services/integration-service/src/test/resources/application-test.yml
 spring:
   datasource:
     url: jdbc:h2:mem:integrationtestdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
@@ -37,4 +34,3 @@ external-systems:
   wms:
     host: localhost
     port: 9999
-*/

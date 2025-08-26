@@ -1,0 +1,139 @@
+# services/integration-service/src/main/resources/application.yml
+server:
+  port: 8082
+
+spring:
+  application:
+    name: integration-service
+
+  # Database Configuration
+  datasource:
+    url: jdbc:h2:mem:integrationdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    driver-class-name: org.h2.Driver
+    username: sa
+    password: password
+
+  # JPA Configuration
+  jpa:
+    database-platform: org.hibernate.dialect.H2Dialect
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+
+  # H2 Console
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+
+  # RabbitMQ Configuration
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: swiftlogistics
+    password: logistics123
+    virtual-host: /
+    connection-timeout: 15000
+
+  # Cloud Configuration
+  cloud:
+    config:
+      enabled: false
+
+# Eureka Configuration (disabled for standalone testing)
+eureka:
+  client:
+    enabled: false  # Disable Eureka for now
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+    fetch-registry: false
+    register-with-eureka: false
+
+# External System Configuration
+external-systems:
+  cms:
+    endpoint: http://localhost:8082/mock/cms
+    timeout: 30000
+    retry:
+      max-attempts: 3
+      delay: 1000
+  ros:
+    endpoint: http://localhost:8082/mock/ros
+    timeout: 20000
+    retry:
+      max-attempts: 3
+      delay: 500
+  wms:
+    host: localhost
+    port: 9999
+    timeout: 15000
+    retry:
+      max-attempts: 3
+      delay: 1000
+
+# RabbitMQ Queue Configuration
+rabbitmq:
+  exchanges:
+    order: order.exchange
+    integration: integration.exchange
+  queues:
+    order-processing: order.processing.queue
+    cms-processing: cms.processing.queue
+    ros-processing: ros.processing.queue
+    wms-processing: wms.processing.queue
+    integration-status: integration.status.queue
+
+# Management and Monitoring
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      show-details: always
+
+# Logging Configuration
+logging:
+  level:
+    com.swiftlogistics.integration: DEBUG
+    org.springframework.amqp: WARN
+    org.springframework.ws: INFO
+  pattern:
+    console: "%d{HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+
+# Application Info
+info:
+  app:
+    name: SwiftLogistics Integration Service
+    description: Handles protocol translation and external system integration
+    version: 1.0.0
+
+---
+# Docker Profile
+spring:
+  profiles: docker
+
+  datasource:
+    url: jdbc:postgresql://postgres:5432/swiftlogistics
+    username: swift
+    password: logistics123
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    hibernate:
+      ddl-auto: create
+
+  rabbitmq:
+    host: rabbitmq
+    username: swiftlogistics
+    password: logistics123
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://eureka-server:8761/eureka/
