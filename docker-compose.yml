@@ -1,0 +1,67 @@
+services:
+  # Database
+  postgres:
+    image: postgres:13
+    container_name: swift-postgres
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: swiftlogistics
+      POSTGRES_USER: swift
+      POSTGRES_PASSWORD: logistics123
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - swift-network
+
+  # Message Broker
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: swift-rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: swiftlogistics
+      RABBITMQ_DEFAULT_PASS: logistics123
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    networks:
+      - swift-network
+
+  # Order Service
+  order-service:
+    build:
+      context: ./services/order-service  # Fixed path - relative to docker-compose.yml location
+      dockerfile: services/order-service/Dockerfile
+    container_name: swift-order-service
+    ports:
+      - "8081:8081"
+    depends_on:
+      - postgres
+      - rabbitmq
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/swiftlogistics
+      - SPRING_DATASOURCE_USERNAME=swift
+      - SPRING_DATASOURCE_PASSWORD=logistics123
+      - SPRING_RABBITMQ_HOST=rabbitmq
+      - SPRING_RABBITMQ_USERNAME=swiftlogistics
+      - SPRING_RABBITMQ_PASSWORD=logistics123
+      - EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE=http://eureka-server:8761/eureka/
+    networks:
+      - swift-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8081/api/orders/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+volumes:
+  postgres_data:
+  rabbitmq_data:
+
+networks:
+  swift-network:
+    driver: bridge
