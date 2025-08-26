@@ -1,0 +1,40 @@
+// services/integration-service/src/test/resources/application-test.yml
+package com.swiftlogistics.integration;
+
+/*
+spring:
+  datasource:
+    url: jdbc:h2:mem:integrationtestdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    driver-class-name: org.h2.Driver
+    username: sa
+    password: password
+
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: false
+
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: guest
+    password: guest
+
+eureka:
+  client:
+    enabled: false
+
+logging:
+  level:
+    com.swiftlogistics.integration: INFO
+    org.springframework.amqp: WARN
+
+external-systems:
+  cms:
+    endpoint: http://localhost:8082/mock/cms
+  ros:
+    endpoint: http://localhost:8082/mock/ros
+  wms:
+    host: localhost
+    port: 9999
+*/
