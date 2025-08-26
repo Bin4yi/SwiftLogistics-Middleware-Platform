@@ -3,9 +3,11 @@ package com.swiftlogistics.driver.dto;
 
 import com.swiftlogistics.driver.enums.DeliveryStatus;
 import com.swiftlogistics.driver.enums.OrderPriority;
+import java.io.Serializable;
 import java.time.LocalDateTime;
 
-public class DeliveryResponse {
+public class DeliveryResponse implements Serializable {
+    private static final long serialVersionUID = 1L;
     private Long id;
     private String orderNumber;
     private String clientId;

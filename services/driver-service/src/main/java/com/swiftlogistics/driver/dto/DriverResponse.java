@@ -3,9 +3,11 @@ package com.swiftlogistics.driver.dto;
 
 import com.swiftlogistics.driver.enums.DriverStatus;
 import com.swiftlogistics.driver.enums.VehicleType;
+import java.io.Serializable;
 import java.time.LocalDateTime;
 
-public class DriverResponse {
+public class DriverResponse implements Serializable {
+    private static final long serialVersionUID = 1L;
     private String driverId;
     private String fullName;
     private String email;

@@ -18,7 +18,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/drivers/deliveries")
-@CrossOrigin(origins = "*")
+//@CrossOrigin(origins = "*")
 public class DeliveryController {
 
     private static final Logger logger = LoggerFactory.getLogger(DeliveryController.class);

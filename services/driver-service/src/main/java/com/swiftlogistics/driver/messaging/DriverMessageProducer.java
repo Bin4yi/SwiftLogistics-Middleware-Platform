@@ -1,5 +1,5 @@
-// services/driver-service/src/main/java/com/swiftlogistics/driver/service/messaging/DriverMessageProducer.java
-package com.swiftlogistics.driver.service.messaging;
+// services/driver-service/src/main/java/com/swiftlogistics/driver/messaging/DriverMessageProducer.java
+package com.swiftlogistics.driver.messaging;
 
 import com.swiftlogistics.driver.entity.Delivery;
 import com.swiftlogistics.driver.entity.Driver;

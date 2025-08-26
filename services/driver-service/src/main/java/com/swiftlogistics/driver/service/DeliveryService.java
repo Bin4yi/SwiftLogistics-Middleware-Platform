@@ -6,12 +6,14 @@ import com.swiftlogistics.driver.entity.Delivery;
 import com.swiftlogistics.driver.entity.Driver;
 import com.swiftlogistics.driver.enums.DeliveryStatus;
 import com.swiftlogistics.driver.enums.DriverStatus;
+import com.swiftlogistics.driver.enums.VehicleType;
 import com.swiftlogistics.driver.repository.DeliveryRepository;
 import com.swiftlogistics.driver.repository.DriverRepository;
-import com.swiftlogistics.driver.service.messaging.DriverMessageProducer;
+import com.swiftlogistics.driver.messaging.DriverMessageProducer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -74,6 +76,20 @@ public class DeliveryService {
         return deliveries.stream()
                 .map(this::mapToDeliveryResponse)
                 .collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
+    public DeliveryResponse getDeliveryDetails(String orderNumber, String driverId) {
+        logger.debug("Fetching delivery details for orderNumber: {} and driverId: {}", orderNumber, driverId);
+
+        Delivery delivery = deliveryRepository.findByOrderNumber(orderNumber)
+                .orElseThrow(() -> new RuntimeException("Delivery not found: " + orderNumber));
+
+        if (delivery.getDriver() == null || !delivery.getDriver().getDriverId().equals(driverId)) {
+            throw new RuntimeException("Delivery not assigned to this driver");
+        }
+
+        return mapToDeliveryResponse(delivery);
     }
 
     public DeliveryResponse updateDeliveryStatus(String orderNumber, String driverId, DeliveryUpdateRequest request) {
@@ -146,20 +162,22 @@ public class DeliveryService {
         return updateDeliveryStatus(orderNumber, driverId, request);
     }
 
-    @Transactional(readOnly = true)
-    public DeliveryResponse getDeliveryDetails(String orderNumber, String driverId) {
-        logger.debug("Fetching delivery details: {} for driver: {}", orderNumber, driverId);
-
-        Delivery delivery = deliveryRepository.findByOrderNumber(orderNumber)
-                .orElseThrow(() -> new RuntimeException("Delivery not found: " + orderNumber));
-
-        // Verify delivery belongs to driver
-        if (!delivery.getDriver().getDriverId().equals(driverId)) {
-            throw new RuntimeException("Delivery not assigned to this driver");
-        }
-
-        return mapToDeliveryResponse(delivery);
-    }
+//    @Transactional(readOnly = true)
+//    @Cacheable(value = "availableDrivers", key = "#vehicleType != null ? #vehicleType.toString() : 'ALL'")
+//    public List<DriverResponse> getAvailableDrivers(VehicleType vehicleType) {
+//        logger.debug("Fetching available drivers for vehicle type: {}", vehicleType);
+//
+//        List<Driver> drivers;
+//        if (vehicleType != null) {
+//            drivers = driverRepository.findAvailableDriversByVehicleType(DriverStatus.AVAILABLE, vehicleType);
+//        } else {
+//            drivers = driverRepository.findByStatus(DriverStatus.AVAILABLE);
+//        }
+//
+//        return drivers.stream()
+//                .map(this::mapToDriverResponse)
+//                .collect(Collectors.toList());
+//    }
 
     // Message listener for new delivery assignments
     @Transactional

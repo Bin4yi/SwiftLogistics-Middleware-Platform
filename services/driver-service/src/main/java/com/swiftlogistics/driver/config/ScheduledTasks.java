@@ -1,5 +1,5 @@
-// services/driver-service/src/main/java/com/swiftlogistics/driver/service/ScheduledTasks.java
-package com.swiftlogistics.driver.service;
+// services/driver-service/src/main/java/com/swiftlogistics/driver/config/ScheduledTasks.java
+package com.swiftlogistics.driver.config;
 
 import com.swiftlogistics.driver.entity.Driver;
 import com.swiftlogistics.driver.enums.DriverStatus;

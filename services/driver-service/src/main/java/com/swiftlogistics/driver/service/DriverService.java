@@ -8,7 +8,7 @@ import com.swiftlogistics.driver.entity.Driver;
 import com.swiftlogistics.driver.enums.DriverStatus;
 import com.swiftlogistics.driver.enums.VehicleType;
 import com.swiftlogistics.driver.repository.DriverRepository;
-import com.swiftlogistics.driver.service.messaging.DriverMessageProducer;
+import com.swiftlogistics.driver.messaging.DriverMessageProducer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -165,7 +165,7 @@ public class DriverService {
     }
 
     @Transactional(readOnly = true)
-    @Cacheable(value = "availableDrivers", key = "#vehicleType")
+    @Cacheable(value = "availableDrivers", key = "#vehicleType != null ? #vehicleType.toString() : 'ALL'")
     public List<DriverResponse> getAvailableDrivers(VehicleType vehicleType) {
         logger.debug("Fetching available drivers for vehicle type: {}", vehicleType);
 
