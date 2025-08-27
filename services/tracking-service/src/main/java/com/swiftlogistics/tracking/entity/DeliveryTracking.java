@@ -43,7 +43,8 @@ public class DeliveryTracking {
     private LocalDateTime updatedAt;
 
     // Constructors
-    public DeliveryTracking() {}
+    public DeliveryTracking() {
+    }
 
     public DeliveryTracking(String orderNumber, String clientId, String currentStatus) {
         this.orderNumber = orderNumber;
@@ -55,47 +56,96 @@ public class DeliveryTracking {
 
     @PreUpdate
     protected void onUpdate() {
-        updatedAt = LocalDateTime.now();
+        this.updatedAt = LocalDateTime.now();
     }
 
     // Getters and Setters
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
+    public Long getId() {
+        return id;
+    }
 
-    public String getOrderNumber() { return orderNumber; }
-    public void setOrderNumber(String orderNumber) { this.orderNumber = orderNumber; }
+    public void setId(Long id) {
+        this.id = id;
+    }
 
-    public String getClientId() { return clientId; }
-    public void setClientId(String clientId) { this.clientId = clientId; }
+    public String getOrderNumber() {
+        return orderNumber;
+    }
 
-    public String getCurrentStatus() { return currentStatus; }
+    public void setOrderNumber(String orderNumber) {
+        this.orderNumber = orderNumber;
+    }
+
+    public String getClientId() {
+        return clientId;
+    }
+
+    public void setClientId(String clientId) {
+        this.clientId = clientId;
+    }
+
+    public String getCurrentStatus() {
+        return currentStatus;
+    }
+
     public void setCurrentStatus(String currentStatus) {
         this.currentStatus = currentStatus;
         this.updatedAt = LocalDateTime.now();
     }
 
-    public String getAssignedDriverId() { return assignedDriverId; }
-    public void setAssignedDriverId(String assignedDriverId) { this.assignedDriverId = assignedDriverId; }
+    public String getAssignedDriverId() {
+        return assignedDriverId;
+    }
 
-    public LocalDateTime getEstimatedDeliveryTime() { return estimatedDeliveryTime; }
+    public void setAssignedDriverId(String assignedDriverId) {
+        this.assignedDriverId = assignedDriverId;
+    }
+
+    public LocalDateTime getEstimatedDeliveryTime() {
+        return estimatedDeliveryTime;
+    }
+
     public void setEstimatedDeliveryTime(LocalDateTime estimatedDeliveryTime) {
         this.estimatedDeliveryTime = estimatedDeliveryTime;
     }
 
-    public Double getLastKnownLatitude() { return lastKnownLatitude; }
-    public void setLastKnownLatitude(Double lastKnownLatitude) { this.lastKnownLatitude = lastKnownLatitude; }
+    public Double getLastKnownLatitude() {
+        return lastKnownLatitude;
+    }
 
-    public Double getLastKnownLongitude() { return lastKnownLongitude; }
-    public void setLastKnownLongitude(Double lastKnownLongitude) { this.lastKnownLongitude = lastKnownLongitude; }
+    public void setLastKnownLatitude(Double lastKnownLatitude) {
+        this.lastKnownLatitude = lastKnownLatitude;
+    }
 
-    public LocalDateTime getLastLocationUpdate() { return lastLocationUpdate; }
+    public Double getLastKnownLongitude() {
+        return lastKnownLongitude;
+    }
+
+    public void setLastKnownLongitude(Double lastKnownLongitude) {
+        this.lastKnownLongitude = lastKnownLongitude;
+    }
+
+    public LocalDateTime getLastLocationUpdate() {
+        return lastLocationUpdate;
+    }
+
     public void setLastLocationUpdate(LocalDateTime lastLocationUpdate) {
         this.lastLocationUpdate = lastLocationUpdate;
     }
 
-    public LocalDateTime getCreatedAt() { return createdAt; }
-    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
 
-    public LocalDateTime getUpdatedAt() { return updatedAt; }
-    public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public LocalDateTime getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public void setUpdatedAt(LocalDateTime updatedAt) {
+        this.updatedAt = updatedAt;
+    }
 }
