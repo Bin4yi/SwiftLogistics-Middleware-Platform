@@ -6,116 +6,72 @@ spring:
   application:
     name: tracking-service
 
-  # Config Server Configuration (Optional for local development)
-  config:
-    import: optional:configserver:http://localhost:8888
+  autoconfigure:
+    exclude:
+      - org.springframework.cloud.netflix.eureka.config.EurekaClientAutoConfiguration
+      - org.springframework.cloud.netflix.eureka.EurekaClientAutoConfiguration
+      - org.springframework.cloud.netflix.eureka.config.DiscoveryClientOptionalArgsConfiguration
+      - org.springframework.cloud.config.client.ConfigClientAutoConfiguration
+      - org.springframework.cloud.autoconfigure.ConfigurationPropertiesRebinderAutoConfiguration
+      - org.springframework.cloud.commons.util.UtilAutoConfiguration
+      - org.springframework.cloud.context.refresh.ContextRefresherAutoConfiguration
+      - org.springframework.cloud.context.scope.refresh.RefreshScopeAutoConfiguration
 
-  # Database Configuration - H2 for local development
+  # Disable Spring Cloud Config
+  cloud:
+    config:
+      enabled: false
+    discovery:
+      enabled: false
+
+  # Database configuration
   datasource:
-    url: jdbc:h2:mem:trackingdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    url: jdbc:h2:mem:trackingdb
     driver-class-name: org.h2.Driver
     username: sa
-    password:
-    hikari:
-      maximum-pool-size: 10
-      minimum-idle: 5
-
-  jpa:
-    hibernate:
-      ddl-auto: create-drop
-    show-sql: true
-    properties:
-      hibernate:
-        dialect: org.hibernate.dialect.H2Dialect
-        format_sql: true
-    database-platform: org.hibernate.dialect.H2Dialect
+    password: password
 
   h2:
     console:
       enabled: true
       path: /h2-console
 
-  # Redis Configuration
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: true
+    database-platform: org.hibernate.dialect.H2Dialect
+
+  # Redis configuration
   redis:
     host: localhost
     port: 6379
     timeout: 2000ms
-    lettuce:
-      pool:
-        max-active: 8
-        max-idle: 8
-        min-idle: 0
 
-  # RabbitMQ Configuration
+  # RabbitMQ configuration
   rabbitmq:
     host: localhost
     port: 5672
     username: guest
     password: guest
-    virtual-host: /
-    listener:
-      simple:
-        retry:
-          enabled: true
-          max-attempts: 3
-          initial-interval: 1000ms
-          multiplier: 2
-          max-interval: 10000ms
 
-# Cloud Configuration
-cloud:
-  config:
-    enabled: false
-    import-check:
-      enabled: false
-
-# Service Discovery
+# Disable Eureka
 eureka:
   client:
-    service-url:
-      defaultZone: http://localhost:8761/eureka/
-    fetch-registry: true
-    register-with-eureka: true
-    enabled: false  # Disable for local development
-  instance:
-    prefer-ip-address: true
-    lease-renewal-interval-in-seconds: 10
-    lease-expiration-duration-in-seconds: 30
+    enabled: false
 
-# RabbitMQ Configuration
-rabbitmq:
-  exchanges:
-    tracking: tracking.exchange
-  queues:
-    order-status: order.status.queue
-    driver-location: driver.location.queue
-    delivery-status: delivery.status.queue
-    notifications: notifications.queue
-
-# Actuator Configuration
+# Management endpoints
 management:
   endpoints:
     web:
       exposure:
-        include: health,info,metrics,prometheus
+        include: health,info,mappings
   endpoint:
     health:
       show-details: always
-  metrics:
-    export:
-      prometheus:
-        enabled: true
 
-# Logging Configuration
+# Logging
 logging:
   level:
     com.swiftlogistics.tracking: DEBUG
-    org.springframework.amqp: INFO
-    org.springframework.messaging: INFO
-    org.hibernate.SQL: DEBUG
-    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
-  pattern:
-    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level [%logger{36}] - %msg%n"
-    file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level [%logger{36}] - %msg%n"
-  file:
-    name: logs/tracking-service.log
+    org.springframework.web: DEBUG

@@ -3,15 +3,23 @@ package com.swiftlogistics.tracking;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.cloud.netflix.eureka.EnableEurekaClient;
-import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
-import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
+import org.springframework.cache.annotation.EnableCaching;
 
 @SpringBootApplication
-@EnableJpaRepositories
-@EnableJpaAuditing
+@EnableCaching
 public class TrackingServiceApplication {
+
     public static void main(String[] args) {
-        SpringApplication.run(TrackingServiceApplication.class, args);
+        // Disable Spring Cloud auto-configuration
+        System.setProperty("spring.cloud.config.enabled", "false");
+        System.setProperty("spring.cloud.discovery.enabled", "false");
+        System.setProperty("eureka.client.enabled", "false");
+        
+        SpringApplication app = new SpringApplication(TrackingServiceApplication.class);
+        
+        // Exclude all Spring Cloud auto-configurations
+        app.setAdditionalProfiles("no-cloud");
+        
+        app.run(args);
     }
 }
