@@ -1,47 +1,105 @@
 services:
-  # Database
+  # Infrastructure Services
   postgres:
     image: postgres:13
     container_name: swift-postgres
-    ports:
-      - "5432:5432"
     environment:
       POSTGRES_DB: swiftlogistics
-      POSTGRES_USER: swift
+      POSTGRES_USER: swiftlogistics
       POSTGRES_PASSWORD: logistics123
+      POSTGRES_MULTIPLE_DATABASES: orderdb,trackingdb,driverdb,integrationdb
+    ports:
+      - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+      - ./scripts/init-databases.sh:/docker-entrypoint-initdb.d/init-databases.sh
     networks:
       - swift-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U swiftlogistics"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
 
-  # Message Broker
-  rabbitmq:
-    image: rabbitmq:3-management
-    container_name: swift-rabbitmq
-    ports:
-      - "5672:5672"
-      - "15672:15672"
-    environment:
-      RABBITMQ_DEFAULT_USER: swiftlogistics
-      RABBITMQ_DEFAULT_PASS: logistics123
-    volumes:
-      - rabbitmq_data:/var/lib/rabbitmq
-    networks:
-      - swift-network
-
-  # Redis Cache
   redis:
     image: redis:6-alpine
     container_name: swift-redis
     ports:
       - "6379:6379"
+    command: redis-server --appendonly yes
     volumes:
       - redis_data:/data
     networks:
       - swift-network
-    command: redis-server --appendonly yes
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
 
-  # Order Service
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: swift-rabbitmq
+    environment:
+      RABBITMQ_DEFAULT_USER: swiftlogistics
+      RABBITMQ_DEFAULT_PASS: logistics123
+      RABBITMQ_DEFAULT_VHOST: /
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+      - ./config/rabbitmq/rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf
+      - ./config/rabbitmq/definitions.json:/etc/rabbitmq/definitions.json
+    networks:
+      - swift-network
+    healthcheck:
+      test: ["CMD", "rabbitmqctl", "status"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  # Service Discovery
+  eureka-server:
+    build:
+      context: ./infrastructure/eureka-server
+      dockerfile: Dockerfile
+    container_name: swift-eureka
+    ports:
+      - "8761:8761"
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+    networks:
+      - swift-network
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8761/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 10
+
+  # Configuration Management
+  config-server:
+    build:
+      context: ./infrastructure/config-server
+      dockerfile: Dockerfile
+    container_name: swift-config
+    ports:
+      - "8888:8888"
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE=http://eureka-server:8761/eureka
+    depends_on:
+      eureka-server:
+        condition: service_healthy
+    networks:
+      - swift-network
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8888/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  # Business Services
   order-service:
     build:
       context: ./services/order-service
@@ -49,27 +107,31 @@ services:
     container_name: swift-order-service
     ports:
       - "8081:8081"
-    depends_on:
-      - postgres
-      - rabbitmq
     environment:
       - SPRING_PROFILES_ACTIVE=docker
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/swiftlogistics
-      - SPRING_DATASOURCE_USERNAME=swift
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/orderdb
+      - SPRING_DATASOURCE_USERNAME=swiftlogistics
       - SPRING_DATASOURCE_PASSWORD=logistics123
       - SPRING_RABBITMQ_HOST=rabbitmq
-      - SPRING_RABBITMQ_USERNAME=swiftlogistics
-      - SPRING_RABBITMQ_PASSWORD=logistics123
+      - EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE=http://eureka-server:8761/eureka
+      - SPRING_CLOUD_CONFIG_URI=http://config-server:8888
+    depends_on:
+      eureka-server:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      config-server:
+        condition: service_healthy
     networks:
       - swift-network
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8081/api/orders/health"]
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8081/actuator/health"]
       interval: 30s
       timeout: 10s
-      retries: 3
-      start_period: 40s
+      retries: 5
 
-  # Integration Service
   integration-service:
     build:
       context: ./services/integration-service
@@ -77,27 +139,66 @@ services:
     container_name: swift-integration-service
     ports:
       - "8082:8082"
-    depends_on:
-      - postgres
-      - rabbitmq
     environment:
       - SPRING_PROFILES_ACTIVE=docker
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/swiftlogistics
-      - SPRING_DATASOURCE_USERNAME=swift
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/integrationdb
+      - SPRING_DATASOURCE_USERNAME=swiftlogistics
       - SPRING_DATASOURCE_PASSWORD=logistics123
       - SPRING_RABBITMQ_HOST=rabbitmq
-      - SPRING_RABBITMQ_USERNAME=swiftlogistics
-      - SPRING_RABBITMQ_PASSWORD=logistics123
+      - EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE=http://eureka-server:8761/eureka
+      - SPRING_CLOUD_CONFIG_URI=http://config-server:8888
+    depends_on:
+      eureka-server:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      config-server:
+        condition: service_healthy
     networks:
       - swift-network
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8082/api/integration/health"]
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8082/actuator/health"]
       interval: 30s
       timeout: 10s
-      retries: 3
-      start_period: 40s
+      retries: 5
 
-  # Driver Service
+  tracking-service:
+    build:
+      context: ./services/tracking-service
+      dockerfile: Dockerfile
+    container_name: swift-tracking-service
+    ports:
+      - "8084:8084"
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/trackingdb
+      - SPRING_DATASOURCE_USERNAME=swiftlogistics
+      - SPRING_DATASOURCE_PASSWORD=logistics123
+      - SPRING_REDIS_HOST=redis
+      - SPRING_RABBITMQ_HOST=rabbitmq
+      - EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE=http://eureka-server:8761/eureka
+      - SPRING_CLOUD_CONFIG_URI=http://config-server:8888
+    depends_on:
+      eureka-server:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      config-server:
+        condition: service_healthy
+    networks:
+      - swift-network
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8084/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
   driver-service:
     build:
       context: ./services/driver-service
@@ -105,36 +206,74 @@ services:
     container_name: swift-driver-service
     ports:
       - "8083:8083"
-    depends_on:
-      - postgres
-      - rabbitmq
-      - redis
     environment:
       - SPRING_PROFILES_ACTIVE=docker
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/swiftlogistics
-      - SPRING_DATASOURCE_USERNAME=swift
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/driverdb
+      - SPRING_DATASOURCE_USERNAME=swiftlogistics
       - SPRING_DATASOURCE_PASSWORD=logistics123
-      - SPRING_RABBITMQ_HOST=rabbitmq
-      - SPRING_RABBITMQ_USERNAME=swiftlogistics
-      - SPRING_RABBITMQ_PASSWORD=logistics123
       - SPRING_REDIS_HOST=redis
-      - JWT_SECRET=swiftlogistics-production-jwt-secret-key-2024
-    volumes:
-      - driver_uploads:/app/uploads/drivers
+      - SPRING_RABBITMQ_HOST=rabbitmq
+      - EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE=http://eureka-server:8761/eureka
+      - SPRING_CLOUD_CONFIG_URI=http://config-server:8888
+    depends_on:
+      eureka-server:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      config-server:
+        condition: service_healthy
     networks:
       - swift-network
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8083/api/drivers/health"]
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8083/actuator/health"]
       interval: 30s
       timeout: 10s
-      retries: 3
-      start_period: 40s
+      retries: 5
+
+  # API Gateway
+  api-gateway:
+    build:
+      context: ./infrastructure/api-gateway
+      dockerfile: Dockerfile
+    container_name: swift-api-gateway
+    ports:
+      - "8080:8080"
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - SPRING_REDIS_HOST=redis
+      - EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE=http://eureka-server:8761/eureka
+      - SPRING_CLOUD_CONFIG_URI=http://config-server:8888
+    depends_on:
+      eureka-server:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      config-server:
+        condition: service_healthy
+      order-service:
+        condition: service_healthy
+      integration-service:
+        condition: service_healthy
+      tracking-service:
+        condition: service_healthy
+      driver-service:
+        condition: service_healthy
+    networks:
+      - swift-network
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8080/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
 
 volumes:
   postgres_data:
-  rabbitmq_data:
   redis_data:
-  driver_uploads:
+  rabbitmq_data:
 
 networks:
   swift-network:

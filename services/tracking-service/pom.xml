@@ -79,6 +79,14 @@
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
+                <configuration>
+                    <image>
+                        <n>swiftlogistics/${project.artifactId}:${project.version}</n>
+                        <tags>
+                            <tag>swiftlogistics/${project.artifactId}:latest</tag>
+                        </tags>
+                    </image>
+                </configuration>
             </plugin>
         </plugins>
     </build>
