@@ -1,0 +1,66 @@
+server:
+  port: 8888
+
+spring:
+  application:
+    name: config-server
+  
+  profiles:
+    active: native
+  
+  cloud:
+    config:
+      server:
+        native:
+          search-locations: classpath:/config
+
+  # Disable Spring Boot's default security AND management security
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration
+      - org.springframework.boot.actuate.autoconfigure.security.servlet.ManagementWebSecurityAutoConfiguration
+
+# Management endpoints without security
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,refresh
+  endpoint:
+    health:
+      show-details: always
+
+eureka:
+  client:
+    enabled: true
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+    fetch-registry: true
+    register-with-eureka: true
+  instance:
+    prefer-ip-address: true
+    hostname: localhost
+
+logging:
+  level:
+    org.springframework.cloud.config: DEBUG
+  pattern:
+    console: "%d{HH:mm:ss} [Config-Server] %-5level %logger{36} - %msg%n"
+
+info:
+  app:
+    name: SwiftLogistics Config Server
+    description: Centralized Configuration Management
+    version: 1.0.0
+
+---
+# Docker Profile for Config Server
+spring:
+  profiles: docker
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://eureka-server:8761/eureka/
+  instance:
+    hostname: config-server

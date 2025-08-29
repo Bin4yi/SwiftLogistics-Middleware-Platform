@@ -7,6 +7,7 @@
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
         <module name="integration-service" />
+        <module name="config-server" />
         <module name="order-service" />
         <module name="eureka-server" />
         <module name="driver-service" />
@@ -19,6 +20,7 @@
   </component>
   <component name="JavacSettings">
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
+      <module name="config-server" options="-parameters" />
       <module name="driver-service" options="" />
       <module name="eureka-server" options="" />
       <module name="integration" options="-parameters" />

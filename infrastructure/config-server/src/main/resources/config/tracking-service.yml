@@ -2,15 +2,7 @@ server:
   port: 8084
 
 spring:
-  application:
-    name: tracking-service
-
-  cloud:
-    config:
-      import-check:
-        enabled: false
-
-  # Database configuration - FALLBACK
+  # Database configuration
   datasource:
     url: jdbc:h2:mem:trackingdb
     driver-class-name: org.h2.Driver
@@ -28,20 +20,20 @@ spring:
     show-sql: true
     database-platform: org.hibernate.dialect.H2Dialect
   
-  # Redis configuration - FALLBACK
+  # Redis configuration
   redis:
     host: localhost
     port: 6379
     timeout: 2000ms
   
-  # RabbitMQ configuration - FALLBACK
+  # RabbitMQ configuration
   rabbitmq:
     host: localhost
     port: 5672
     username: swiftlogistics
     password: logistics123
 
-# Eureka Configuration - FALLBACK
+# Eureka Configuration
 eureka:
   client:
     enabled: true
@@ -58,7 +50,28 @@ eureka:
     hostname: localhost
     instance-id: ${spring.application.name}:${spring.application.instance_id:${random.value}}
 
+# Management endpoints
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,mappings,metrics
+  endpoint:
+    health:
+      show-details: always
+
 # Logging
 logging:
+  level:
+    com.swiftlogistics.tracking: DEBUG
+    com.netflix.eureka: INFO
+    com.netflix.discovery: INFO
   pattern:
-    console: "%d{HH:mm:ss} [Tracking-Service-LOCAL] %-5level %logger{36} - %msg%n"
+    console: "%d{HH:mm:ss} [Tracking-Service] %-5level %logger{36} - %msg%n"
+
+# Application Info
+info:
+  app:
+    name: SwiftLogistics Tracking Service
+    description: Real-time tracking and notification service
+    version: 1.0.0

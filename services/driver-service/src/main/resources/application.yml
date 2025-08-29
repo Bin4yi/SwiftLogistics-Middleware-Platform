@@ -1,10 +1,14 @@
-# services/driver-service/src/main/resources/application.yml
 server:
   port: 8083
 
 spring:
   application:
     name: driver-service
+
+  cloud:
+    config:
+      import-check:
+        enabled: false
 
   # Database Configuration
   datasource:
@@ -25,11 +29,15 @@ spring:
         format_sql: true
         use_sql_comments: true
 
-  # SQL Initialization
+  # SQL Initialization - FIXED
   sql:
     init:
       mode: always
       defer-datasource-initialization: true
+      schema-locations: classpath:schema.sql
+      data-locations: classpath:data.sql
+      separator: ;
+      continue-on-error: false
 
   # H2 Console
   h2:
@@ -39,7 +47,7 @@ spring:
       settings:
         web-allow-others: true
 
-  # RabbitMQ Configuration
+  # RabbitMQ Configuration - FALLBACK
   rabbitmq:
     host: localhost
     port: 5672
@@ -48,49 +56,7 @@ spring:
     virtual-host: /
     connection-timeout: 15000
 
-  # Redis Configuration
-  redis:
-    host: localhost
-    port: 6379
-    password:
-    database: 0
-    timeout: 2000ms
-    jedis:
-      pool:
-        max-active: 8
-        max-wait: -1ms
-        max-idle: 8
-        min-idle: 0
-
-  # Cache Configuration
-  cache:
-    type: redis
-    redis:
-      time-to-live: 600000 # 10 minutes
-
-# Eureka Configuration - FIXED
-eureka:
-  client:
-    enabled: true  # Enable Eureka client
-    service-url:
-      defaultZone: http://localhost:8761/eureka/
-    fetch-registry: true
-    register-with-eureka: true
-    healthcheck:
-      enabled: true
-  instance:
-    prefer-ip-address: true
-    lease-renewal-interval-in-seconds: 30
-    lease-expiration-duration-in-seconds: 90
-    hostname: localhost
-
-# JWT Configuration
-app:
-  jwt:
-    secret: swiftlogistics-driver-jwt-secret-key-2024-secure
-    expiration: 86400000 # 24 hours
-
-# RabbitMQ Queue Configuration
+# RabbitMQ Queue Configuration - FALLBACK
 rabbitmq:
   exchanges:
     driver: driver.exchange
@@ -101,78 +67,6 @@ rabbitmq:
     route-update: route.update.queue
     emergency-stop: emergency.stop.queue
 
-# File Upload Configuration
-file:
-  upload:
-    max-size: 10MB
-    allowed-types: image/jpeg,image/png,image/gif
-    directory: ./uploads/drivers
-
-# Management and Monitoring
-management:
-  endpoints:
-    web:
-      exposure:
-        include: health,info,metrics,prometheus
-  endpoint:
-    health:
-      show-details: always
-
-# Logging Configuration
 logging:
-  level:
-    com.swiftlogistics.driver: DEBUG
-    org.springframework.amqp: WARN
-    org.springframework.security: INFO
-    org.springframework.cache: DEBUG
-    com.netflix.eureka: INFO
-    com.netflix.discovery: INFO
   pattern:
-    console: "%d{HH:mm:ss} [Driver-Service] %-5level %logger{36} - %msg%n"
-
-# Application Info
-info:
-  app:
-    name: SwiftLogistics Driver Service
-    description: Driver Management and Mobile App Backend
-    version: 1.0.0
-
-# Scheduling Configuration
-driver:
-  location:
-    cleanup-interval: PT15M
-    max-age: PT1H
-  stats:
-    update-interval: PT5M
-
----
-# Docker Profile
-spring:
-  profiles: docker
-
-  datasource:
-    url: jdbc:postgresql://postgres:5432/swiftlogistics
-    username: swift
-    password: logistics123
-    driver-class-name: org.postgresql.Driver
-
-  jpa:
-    database-platform: org.hibernate.dialect.PostgreSQLDialect
-    hibernate:
-      ddl-auto: create
-
-  rabbitmq:
-    host: rabbitmq
-    username: swiftlogistics
-    password: logistics123
-
-  redis:
-    host: redis
-
-eureka:
-  client:
-    service-url:
-      defaultZone: http://eureka-server:8761/eureka/
-  instance:
-    hostname: driver-service
-    prefer-ip-address: true
+    console: "%d{HH:mm:ss} [Driver-Service-LOCAL] %-5level %logger{36} - %msg%n"

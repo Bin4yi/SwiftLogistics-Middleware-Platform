@@ -14,7 +14,7 @@
 	</parent>
 
 	<artifactId>driver-service</artifactId>
-	<n>Driver Service</n>
+	<name>Driver Service</name>
 	<description>Driver Management and Mobile App Backend for SwiftLogistics</description>
 
 	<dependencies>
@@ -26,6 +26,10 @@
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-data-jpa</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.cloud</groupId>
+			<artifactId>spring-cloud-starter-config</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>

@@ -2,14 +2,6 @@ server:
   port: 8082
 
 spring:
-  application:
-    name: integration-service
-
-  cloud:
-    config:
-      import-check:
-        enabled: false
-
   # Database Configuration
   datasource:
     url: jdbc:h2:mem:integrationdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
@@ -33,7 +25,7 @@ spring:
       enabled: true
       path: /h2-console
 
-  # RabbitMQ Configuration - FALLBACK
+  # RabbitMQ Configuration
   rabbitmq:
     host: localhost
     port: 5672
@@ -42,7 +34,23 @@ spring:
     virtual-host: /
     connection-timeout: 15000
 
-# External System Configuration - FALLBACK
+# Eureka Configuration
+eureka:
+  client:
+    enabled: true
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+    fetch-registry: true
+    register-with-eureka: true
+    healthcheck:
+      enabled: true
+  instance:
+    prefer-ip-address: true
+    lease-renewal-interval-in-seconds: 30
+    lease-expiration-duration-in-seconds: 90
+    hostname: localhost
+
+# External System Configuration - THIS WAS MISSING
 external-systems:
   cms:
     endpoint: http://localhost:8082/mock/cms
@@ -64,7 +72,7 @@ external-systems:
       max-attempts: 3
       delay: 1000
 
-# RabbitMQ Queue Configuration - FALLBACK
+# RabbitMQ Queue Configuration
 rabbitmq:
   exchanges:
     order: order.exchange
@@ -76,6 +84,30 @@ rabbitmq:
     wms-processing: wms.processing.queue
     integration-status: integration.status.queue
 
+# Management and Monitoring
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      show-details: always
+
+# Logging Configuration
 logging:
+  level:
+    com.swiftlogistics.integration: DEBUG
+    org.springframework.amqp: WARN
+    org.springframework.ws: INFO
+    com.netflix.eureka: INFO
+    com.netflix.discovery: INFO
   pattern:
-    console: "%d{HH:mm:ss} [Integration-Service-LOCAL] %-5level %logger{36} - %msg%n"
+    console: "%d{HH:mm:ss} [Integration-Service] %-5level %logger{36} - %msg%n"
+
+# Application Info
+info:
+  app:
+    name: SwiftLogistics Integration Service
+    description: Handles protocol translation and external system integration
+    version: 1.0.0

@@ -1,0 +1,155 @@
+server:
+  port: 8081
+
+spring:
+  # Database Configuration
+  datasource:
+    url: jdbc:h2:mem:orderdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    driver-class-name: org.h2.Driver
+    username: sa
+    password: password
+
+  # JPA Configuration
+  jpa:
+    database-platform: org.hibernate.dialect.H2Dialect
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: true
+    defer-datasource-initialization: true
+    properties:
+      hibernate:
+        format_sql: true
+        use_sql_comments: true
+
+  # SQL Initialization
+  sql:
+    init:
+      mode: always
+      defer-datasource-initialization: true
+      data-locations: classpath:data.sql
+      separator: ;
+      continue-on-error: false
+
+  # H2 Console
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+      settings:
+        web-allow-others: true
+
+  # RabbitMQ Configuration
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: swiftlogistics
+    password: logistics123
+    virtual-host: /
+    connection-timeout: 15000
+
+  # Redis Configuration
+  redis:
+    host: localhost
+    port: 6379
+    password: ""
+    database: 0
+    timeout: 2000ms
+    jedis:
+      pool:
+        max-active: 8
+        max-wait: -1ms
+        max-idle: 8
+        min-idle: 0
+
+  # Cache Configuration
+  cache:
+    type: redis
+    redis:
+      time-to-live: 600000
+
+# Eureka Configuration
+eureka:
+  client:
+    enabled: true
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+    fetch-registry: true
+    register-with-eureka: true
+    healthcheck:
+      enabled: true
+  instance:
+    prefer-ip-address: true
+    lease-renewal-interval-in-seconds: 30
+    lease-expiration-duration-in-seconds: 90
+    hostname: localhost
+
+# JWT Configuration
+app:
+  jwt:
+    secret: swiftlogistics-order-jwt-secret-key-2024-secure
+    expiration: 86400000
+
+# RabbitMQ Queue Configuration
+rabbitmq:
+  exchanges:
+    order: order.exchange
+    payment: payment.exchange
+    inventory: inventory.exchange
+    notification: notification.exchange
+  queues:
+    order-created: order.created.queue
+    order-updated: order.updated.queue
+    order-cancelled: order.cancelled.queue
+    payment-processing: payment.processing.queue
+    inventory-check: inventory.check.queue
+    notification-send: notification.send.queue
+
+# Payment Configuration
+payment:
+  gateway:
+    mock:
+      enabled: true
+      success-rate: 0.9
+    stripe:
+      enabled: false
+      public-key: pk_test_placeholder
+      secret-key: sk_test_placeholder
+
+# Business Rules
+order:
+  processing:
+    timeout: 300000
+    max-retry-attempts: 3
+  pricing:
+    tax-rate: 0.1
+    currency: LKR
+    min-order-amount: 100.00
+
+# Management and Monitoring
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      show-details: always
+
+# Logging Configuration
+logging:
+  level:
+    com.swiftlogistics.order: DEBUG
+    org.springframework.amqp: WARN
+    org.springframework.security: INFO
+    org.springframework.cache: DEBUG
+    com.netflix.eureka: INFO
+    com.netflix.discovery: INFO
+  pattern:
+    console: "%d{HH:mm:ss} [Order-Service] %-5level %logger{36} - %msg%n"
+
+# Application Info
+info:
+  app:
+    name: SwiftLogistics Order Service
+    description: Order Management and Processing Service
+    version: 1.0.0

@@ -1,4 +1,18 @@
-# services/order-service/src/main/resources/application.yml
+# # Local overrides only - main config comes from Config Server
+# spring:
+#   cloud:
+#     config:
+#       import-check:
+#         enabled: false  # Allow service to start without Config Server
+
+# # Keep only service-specific overrides here
+# logging:
+#   pattern:
+#     console: "%d{HH:mm:ss} [Order-Service-LOCAL] %-5level %logger{36} - %msg%n"
+
+# server:
+#   port: 8081
+
 server:
   port: 8081
 
@@ -6,132 +20,34 @@ spring:
   application:
     name: order-service
 
-  # Disable Spring Cloud Config
   cloud:
     config:
-      enabled: false
       import-check:
         enabled: false
 
-  # Database Configuration
+  # Database Configuration - FALLBACK
   datasource:
     url: jdbc:h2:mem:orderdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
     driver-class-name: org.h2.Driver
     username: sa
     password: password
 
-  # JPA Configuration
+  # JPA Configuration - FALLBACK
   jpa:
     database-platform: org.hibernate.dialect.H2Dialect
     hibernate:
       ddl-auto: create-drop
     show-sql: true
     defer-datasource-initialization: true
-    properties:
-      hibernate:
-        format_sql: true
-        use_sql_comments: true
 
-  # SQL Initialization
-  sql:
-    init:
-      mode: always
-      defer-datasource-initialization: true
-
-  h2:
-    console:
-      enabled: true
-      path: /h2-console
-      settings:
-        web-allow-others: true
-
-  # RabbitMQ Configuration
+  # RabbitMQ Configuration - FALLBACK
   rabbitmq:
     host: localhost
     port: 5672
     username: swiftlogistics
     password: logistics123
-    virtual-host: /
-    connection-timeout: 15000
-
-# Eureka Configuration - FIXED
-eureka:
-  client:
-    enabled: true  # Enable Eureka client
-    service-url:
-      defaultZone: http://localhost:8761/eureka/
-    fetch-registry: true   # Fetch service registry
-    register-with-eureka: true  # Register this service
-    healthcheck:
-      enabled: true
-  instance:
-    prefer-ip-address: true
-    lease-renewal-interval-in-seconds: 30
-    lease-expiration-duration-in-seconds: 90
-    hostname: localhost
-
-# RabbitMQ Queue Configuration
-rabbitmq:
-  exchanges:
-    order: order.exchange
-  queues:
-    order-processing: order.processing.queue
-    order-status-update: order.status.update.queue
-
-# Management and Monitoring
-management:
-  endpoints:
-    web:
-      exposure:
-        include: health,info,metrics
-  endpoint:
-    health:
-      show-details: always
 
 # Logging Configuration
 logging:
-  level:
-    com.swiftlogistics.order: INFO
-    org.springframework.amqp: WARN
-    org.hibernate.SQL: DEBUG
-    org.springframework.jdbc: DEBUG
-    com.netflix.eureka: INFO
-    com.netflix.discovery: INFO
   pattern:
-    console: "%d{HH:mm:ss} [Order-Service] %-5level %logger{36} - %msg%n"
-
-# Application Info
-info:
-  app:
-    name: SwiftLogistics Order Service
-    description: Handles order management and processing
-    version: 1.0.0
-
----
-# Docker Profile
-spring:
-  profiles: docker
-
-  datasource:
-    url: jdbc:postgresql://postgres:5432/swiftlogistics
-    username: swift
-    password: logistics123
-    driver-class-name: org.postgresql.Driver
-
-  jpa:
-    database-platform: org.hibernate.dialect.PostgreSQLDialect
-    hibernate:
-      ddl-auto: create
-
-  rabbitmq:
-    host: rabbitmq
-    username: swiftlogistics
-    password: logistics123
-
-eureka:
-  client:
-    service-url:
-      defaultZone: http://eureka-server:8761/eureka/
-  instance:
-    hostname: order-service
-    prefer-ip-address: true
+    console: "%d{HH:mm:ss} [Order-Service-LOCAL] %-5level %logger{36} - %msg%n"
