@@ -5,23 +5,19 @@
          http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
+	<!-- CHANGE: Reference the parent POM instead of Spring Boot directly -->
 	<parent>
-		<groupId>org.springframework.boot</groupId>
-		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>2.7.14</version>
-		<relativePath/>
+		<groupId>com.swiftlogistics</groupId>
+		<artifactId>swift-logistics-middleware</artifactId>
+		<version>1.0.0</version>
+		<relativePath>../../pom.xml</relativePath>  <!-- Path to parent POM -->
 	</parent>
 
-	<groupId>com.swiftlogistics</groupId>
 	<artifactId>order-service</artifactId>
-	<version>1.0.0</version>
-	<name>Order Service</name>
+	<n>Order Service</n>
 	<description>Order Management Service for SwiftLogistics</description>
 
-	<properties>
-		<java.version>11</java.version>
-		<spring-cloud.version>2021.0.8</spring-cloud.version>
-	</properties>
+	<!-- Properties inherited from parent, no need to redefine -->
 
 	<dependencies>
 		<!-- Spring Boot Starters -->
@@ -101,17 +97,7 @@
 		</dependency>
 	</dependencies>
 
-	<dependencyManagement>
-		<dependencies>
-			<dependency>
-				<groupId>org.springframework.cloud</groupId>
-				<artifactId>spring-cloud-dependencies</artifactId>
-				<version>${spring-cloud.version}</version>
-				<type>pom</type>
-				<scope>import</scope>
-			</dependency>
-		</dependencies>
-	</dependencyManagement>
+	<!-- dependencyManagement removed - inherited from parent -->
 
 	<build>
 		<plugins>

@@ -8,6 +8,7 @@
         <outputRelativeToContentRoot value="true" />
         <module name="integration-service" />
         <module name="order-service" />
+        <module name="eureka-server" />
         <module name="driver-service" />
         <module name="tracking-service" />
       </profile>
@@ -18,11 +19,12 @@
   </component>
   <component name="JavacSettings">
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
-      <module name="driver-service" options="-parameters" />
+      <module name="driver-service" options="" />
+      <module name="eureka-server" options="" />
       <module name="integration" options="-parameters" />
-      <module name="integration-service" options="-parameters" />
-      <module name="order-service" options="-parameters" />
-      <module name="tracking-service" options="-parameters" />
+      <module name="integration-service" options="" />
+      <module name="order-service" options="" />
+      <module name="tracking-service" options="" />
     </option>
   </component>
 </project>

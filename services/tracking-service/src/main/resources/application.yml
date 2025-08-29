@@ -5,67 +5,68 @@ server:
 spring:
   application:
     name: tracking-service
-
-  autoconfigure:
-    exclude:
-      - org.springframework.cloud.netflix.eureka.config.EurekaClientAutoConfiguration
-      - org.springframework.cloud.netflix.eureka.EurekaClientAutoConfiguration
-      - org.springframework.cloud.netflix.eureka.config.DiscoveryClientOptionalArgsConfiguration
-      - org.springframework.cloud.config.client.ConfigClientAutoConfiguration
-      - org.springframework.cloud.autoconfigure.ConfigurationPropertiesRebinderAutoConfiguration
-      - org.springframework.cloud.commons.util.UtilAutoConfiguration
-      - org.springframework.cloud.context.refresh.ContextRefresherAutoConfiguration
-      - org.springframework.cloud.context.scope.refresh.RefreshScopeAutoConfiguration
-
+  
   # Disable Spring Cloud Config
   cloud:
     config:
       enabled: false
-    discovery:
-      enabled: false
-
+      import-check:
+        enabled: false
+  
   # Database configuration
   datasource:
     url: jdbc:h2:mem:trackingdb
     driver-class-name: org.h2.Driver
     username: sa
     password: password
-
+  
   h2:
     console:
       enabled: true
       path: /h2-console
-
+  
   jpa:
     hibernate:
       ddl-auto: create-drop
     show-sql: true
     database-platform: org.hibernate.dialect.H2Dialect
-
+  
   # Redis configuration
   redis:
     host: localhost
     port: 6379
     timeout: 2000ms
-
+  
   # RabbitMQ configuration
   rabbitmq:
     host: localhost
     port: 5672
-    username: guest
-    password: guest
+    username: swiftlogistics
+    password: logistics123
 
-# Disable Eureka
+# Eureka Configuration
 eureka:
   client:
-    enabled: false
+    enabled: true
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+    fetch-registry: true
+    register-with-eureka: true
+    healthcheck:
+      enabled: true
+  instance:
+    prefer-ip-address: true
+    lease-renewal-interval-in-seconds: 30
+    lease-expiration-duration-in-seconds: 90
+    hostname: localhost
+    instance-id: ${spring.application.name}:${spring.application.instance_id:${random.value}}
 
 # Management endpoints
 management:
   endpoints:
     web:
       exposure:
-        include: health,info,mappings
+        include: health,info,mappings,metrics
   endpoint:
     health:
       show-details: always
@@ -74,4 +75,47 @@ management:
 logging:
   level:
     com.swiftlogistics.tracking: DEBUG
-    org.springframework.web: DEBUG
+    com.netflix.eureka: INFO
+    com.netflix.discovery: INFO
+  pattern:
+    console: "%d{HH:mm:ss} [Tracking-Service] %-5level %logger{36} - %msg%n"
+
+# Application Info
+info:
+  app:
+    name: SwiftLogistics Tracking Service
+    description: Real-time tracking and notification service
+    version: 1.0.0
+
+---
+# Docker Profile
+spring:
+  profiles: docker
+
+  datasource:
+    url: jdbc:postgresql://postgres:5432/swiftlogistics
+    username: swift
+    password: logistics123
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    hibernate:
+      ddl-auto: create
+
+  rabbitmq:
+    host: rabbitmq
+    username: swiftlogistics
+    password: logistics123
+
+  redis:
+    host: redis
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://eureka-server:8761/eureka/
+  instance:
+    hostname: tracking-service
+
+    prefer-ip-address: true

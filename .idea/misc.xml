@@ -10,6 +10,8 @@
         <option value="$PROJECT_DIR$/services/driver-service/pom.xml" />
         <option value="$PROJECT_DIR$/services/tracking/pom.xml" />
         <option value="$PROJECT_DIR$/services/tracking-service/pom.xml" />
+        <option value="$PROJECT_DIR$/pom.xml" />
+        <option value="$PROJECT_DIR$/infrastructure/eureka/pom.xml" />
       </list>
     </option>
   </component>

@@ -38,19 +38,21 @@ spring:
     virtual-host: /
     connection-timeout: 15000
 
-  # Cloud Configuration
-  cloud:
-    config:
-      enabled: false
-
-# Eureka Configuration (disabled for standalone testing)
+# Eureka Configuration - FIXED
 eureka:
   client:
-    enabled: false  # Disable Eureka for now
+    enabled: true  # Enable Eureka client
     service-url:
       defaultZone: http://localhost:8761/eureka/
-    fetch-registry: false
-    register-with-eureka: false
+    fetch-registry: true
+    register-with-eureka: true
+    healthcheck:
+      enabled: true
+  instance:
+    prefer-ip-address: true
+    lease-renewal-interval-in-seconds: 30
+    lease-expiration-duration-in-seconds: 90
+    hostname: localhost
 
 # External System Configuration
 external-systems:
@@ -102,8 +104,10 @@ logging:
     com.swiftlogistics.integration: DEBUG
     org.springframework.amqp: WARN
     org.springframework.ws: INFO
+    com.netflix.eureka: INFO
+    com.netflix.discovery: INFO
   pattern:
-    console: "%d{HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+    console: "%d{HH:mm:ss} [Integration-Service] %-5level %logger{36} - %msg%n"
 
 # Application Info
 info:
@@ -137,3 +141,6 @@ eureka:
   client:
     service-url:
       defaultZone: http://eureka-server:8761/eureka/
+  instance:
+    hostname: integration-service
+    prefer-ip-address: true

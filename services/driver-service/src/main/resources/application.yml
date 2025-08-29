@@ -68,19 +68,21 @@ spring:
     redis:
       time-to-live: 600000 # 10 minutes
 
-  # Cloud Configuration
-  cloud:
-    config:
-      enabled: false
-
-# Eureka Configuration
+# Eureka Configuration - FIXED
 eureka:
   client:
-    enabled: false  # Disable for standalone testing
+    enabled: true  # Enable Eureka client
     service-url:
       defaultZone: http://localhost:8761/eureka/
-    fetch-registry: false
-    register-with-eureka: false
+    fetch-registry: true
+    register-with-eureka: true
+    healthcheck:
+      enabled: true
+  instance:
+    prefer-ip-address: true
+    lease-renewal-interval-in-seconds: 30
+    lease-expiration-duration-in-seconds: 90
+    hostname: localhost
 
 # JWT Configuration
 app:
@@ -123,8 +125,10 @@ logging:
     org.springframework.amqp: WARN
     org.springframework.security: INFO
     org.springframework.cache: DEBUG
+    com.netflix.eureka: INFO
+    com.netflix.discovery: INFO
   pattern:
-    console: "%d{HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+    console: "%d{HH:mm:ss} [Driver-Service] %-5level %logger{36} - %msg%n"
 
 # Application Info
 info:
@@ -136,10 +140,10 @@ info:
 # Scheduling Configuration
 driver:
   location:
-    cleanup-interval: PT15M # Clean up old location data every 15 minutes
-    max-age: PT1H # Remove location data older than 1 hour
+    cleanup-interval: PT15M
+    max-age: PT1H
   stats:
-    update-interval: PT5M # Update driver statistics every 5 minutes
+    update-interval: PT5M
 
 ---
 # Docker Profile
@@ -167,48 +171,8 @@ spring:
 
 eureka:
   client:
-    enabled: true
     service-url:
       defaultZone: http://eureka-server:8761/eureka/
-
----
-# Production Profile
-spring:
-  profiles: production
-
-  jpa:
-    hibernate:
-      ddl-auto: validate
-    show-sql: false
-
-  redis:
-    password: ${REDIS_PASSWORD}
-
-app:
-  jwt:
-    secret: ${JWT_SECRET}
-
-logging:
-  level:
-    com.swiftlogistics.driver: INFO
-    root: WARN
-
-    web:
-      cors:
-        allowed-origins:
-          - "http://localhost:3000"
-          - "http://localhost:3001"
-          - "http://localhost:4200"
-          - "http://localhost:8080"
-          - "https://your-frontend-domain.com"  # Replace with your actual domain
-        allowed-methods:
-          - GET
-          - POST
-          - PUT
-          - DELETE
-          - OPTIONS
-          - PATCH
-        allowed-headers:
-          - "*"
-        allow-credentials: true
-        max-age: 3600
+  instance:
+    hostname: driver-service
+    prefer-ip-address: true

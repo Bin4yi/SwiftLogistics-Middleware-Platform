@@ -6,6 +6,13 @@ spring:
   application:
     name: order-service
 
+  # Disable Spring Cloud Config
+  cloud:
+    config:
+      enabled: false
+      import-check:
+        enabled: false
+
   # Database Configuration
   datasource:
     url: jdbc:h2:mem:orderdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
@@ -19,7 +26,7 @@ spring:
     hibernate:
       ddl-auto: create-drop
     show-sql: true
-    defer-datasource-initialization: true  # KEY FIX: Wait for JPA to create tables first
+    defer-datasource-initialization: true
     properties:
       hibernate:
         format_sql: true
@@ -28,8 +35,8 @@ spring:
   # SQL Initialization
   sql:
     init:
-      mode: always  # Always run data.sql
-      defer-datasource-initialization: true  # Wait for schema creation
+      mode: always
+      defer-datasource-initialization: true
 
   h2:
     console:
@@ -38,28 +45,30 @@ spring:
       settings:
         web-allow-others: true
 
-  # RabbitMQ Configuration (disabled for standalone testing)
+  # RabbitMQ Configuration
   rabbitmq:
     host: localhost
     port: 5672
-    username: swiftlogistics  # Make sure this matches docker-compose
-    password: logistics123    # Make sure this matches docker-compose
+    username: swiftlogistics
+    password: logistics123
     virtual-host: /
     connection-timeout: 15000
 
-  # Cloud Configuration
-  cloud:
-    config:
-      enabled: false
-
-# Eureka Configuration (disabled for standalone testing)
+# Eureka Configuration - FIXED
 eureka:
   client:
-    enabled: false  # Disable Eureka for now
+    enabled: true  # Enable Eureka client
     service-url:
       defaultZone: http://localhost:8761/eureka/
-    fetch-registry: false
-    register-with-eureka: false
+    fetch-registry: true   # Fetch service registry
+    register-with-eureka: true  # Register this service
+    healthcheck:
+      enabled: true
+  instance:
+    prefer-ip-address: true
+    lease-renewal-interval-in-seconds: 30
+    lease-expiration-duration-in-seconds: 90
+    hostname: localhost
 
 # RabbitMQ Queue Configuration
 rabbitmq:
@@ -86,8 +95,10 @@ logging:
     org.springframework.amqp: WARN
     org.hibernate.SQL: DEBUG
     org.springframework.jdbc: DEBUG
+    com.netflix.eureka: INFO
+    com.netflix.discovery: INFO
   pattern:
-    console: "%d{HH:mm:ss} - %msg%n"
+    console: "%d{HH:mm:ss} [Order-Service] %-5level %logger{36} - %msg%n"
 
 # Application Info
 info:
@@ -119,6 +130,8 @@ spring:
 
 eureka:
   client:
-    enabled: true
     service-url:
       defaultZone: http://eureka-server:8761/eureka/
+  instance:
+    hostname: order-service
+    prefer-ip-address: true
