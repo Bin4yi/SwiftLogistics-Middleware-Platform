@@ -6,116 +6,118 @@ spring:
     name: api-gateway
 
   cloud:
-    config:
-      import-check:
-        enabled: false
     gateway:
+      discovery:
+        locator:
+          enabled: false  # DISABLE automatic discovery to avoid DNS issues
       globalcors:
         cors-configurations:
           '[/**]':
-            allowed-origin-patterns: "*"
-            allowed-methods: "*"
-            allowed-headers: "*"
-            allow-credentials: true
-            max-age: 3600
-      discovery:
-        locator:
-          enabled: true
-          lower-case-service-id: true
+            allowedOriginPatterns: "*"
+            allowedMethods:
+              - GET
+              - POST
+              - PUT
+              - DELETE
+              - OPTIONS
+            allowedHeaders: "*"
+            allowCredentials: true
+            maxAge: 3600
+      routes:
+        # DIRECT IP-BASED ROUTING - NO DNS RESOLUTION NEEDED
+
+        # Order Service Routes - Direct IP
+        - id: order-service-api
+          uri: http://localhost:8081  # Direct URL instead of lb://
           predicates:
-            - name: Path
-              args:
-                pattern: "'/api/' + serviceId + '/**'"
-          filters:
-            - name: StripPrefix
-              args:
-                parts: 1
+            - Path=/api/orders/**
 
-  # Redis Configuration for Rate Limiting
-  redis:
-    host: localhost
-    port: 6379
-    timeout: 2000ms
-    database: 1
+        # Integration Service Routes - Direct IP
+        - id: integration-service-api
+          uri: http://localhost:8082  # Direct URL instead of lb://
+          predicates:
+            - Path=/api/integration/**
 
-# Eureka Configuration
+        # Integration Service Mock Routes - Direct IP
+        - id: integration-service-mock
+          uri: http://localhost:8082  # Direct URL instead of lb://
+          predicates:
+            - Path=/mock/**
+
+        # Tracking Service Routes - Direct IP
+        - id: tracking-service-api
+          uri: http://localhost:8084  # Direct URL instead of lb://
+          predicates:
+            - Path=/api/tracking/**
+
+        # Driver Service Routes - Direct IP
+        - id: driver-service-api
+          uri: http://localhost:8083  # Direct URL instead of lb://
+          predicates:
+            - Path=/api/drivers/**
+
+    config:
+      import-check:
+        enabled: false
+
+# MINIMAL EUREKA CONFIG - JUST FOR MONITORING
 eureka:
   client:
-    enabled: true
-    service-url:
-      defaultZone: http://localhost:8761/eureka/
-    fetch-registry: true
-    register-with-eureka: true
-  instance:
-    prefer-ip-address: true
-    lease-renewal-interval-in-seconds: 30
-    lease-expiration-duration-in-seconds: 90
+    enabled: false  # DISABLE Eureka client to avoid DNS issues
+    register-with-eureka: false
+    fetch-registry: false
 
-# Management Configuration
+# Management and Actuator
 management:
   endpoints:
     web:
       exposure:
-        include: health,info,gateway,metrics,prometheus
+        include: health,info,gateway,routes
   endpoint:
     health:
       show-details: always
     gateway:
       enabled: true
 
-# Circuit Breaker Configuration
-resilience4j:
-  circuitbreaker:
-    instances:
-      order-service-cb:
-        registerHealthIndicator: true
-        slidingWindowSize: 10
-        minimumNumberOfCalls: 5
-        permittedNumberOfCallsInHalfOpenState: 3
-        automaticTransitionFromOpenToHalfOpenEnabled: true
-        waitDurationInOpenState: 10s
-        failureRateThreshold: 50
-        eventConsumerBufferSize: 10
-      integration-service-cb:
-        registerHealthIndicator: true
-        slidingWindowSize: 10
-        minimumNumberOfCalls: 5
-        permittedNumberOfCallsInHalfOpenState: 3
-        automaticTransitionFromOpenToHalfOpenEnabled: true
-        waitDurationInOpenState: 10s
-        failureRateThreshold: 50
-      tracking-service-cb:
-        registerHealthIndicator: true
-        slidingWindowSize: 10
-        minimumNumberOfCalls: 5
-        permittedNumberOfCallsInHalfOpenState: 3
-        automaticTransitionFromOpenToHalfOpenEnabled: true
-        waitDurationInOpenState: 10s
-        failureRateThreshold: 50
-      driver-service-cb:
-        registerHealthIndicator: true
-        slidingWindowSize: 10
-        minimumNumberOfCalls: 5
-        permittedNumberOfCallsInHalfOpenState: 3
-        automaticTransitionFromOpenToHalfOpenEnabled: true
-        waitDurationInOpenState: 10s
-        failureRateThreshold: 50
-
-# Logging Configuration
+# Logging
 logging:
+  level:
+    com.swiftlogistics.gateway: DEBUG
+    org.springframework.cloud.gateway: INFO
+    reactor.netty.http.client: INFO
+    io.netty.resolver: INFO
   pattern:
     console: "%d{HH:mm:ss} [API-Gateway] %-5level %logger{36} - %msg%n"
-  level:
-    org.springframework.cloud.gateway: DEBUG
-    com.swiftlogistics.gateway: DEBUG
 
 ---
-# Docker Profile
+# Docker Profile - For containerized deployment
 spring:
   profiles: docker
-  redis:
-    host: redis
-eureka:
-  client:
-    service-url:
-      defaultZone: http://eureka-server:8761/eureka/
+  cloud:
+    gateway:
+      routes:
+        # Docker service names instead of localhost
+        - id: order-service-api
+          uri: http://order-service:8081
+          predicates:
+            - Path=/api/orders/**
+
+        - id: integration-service-api
+          uri: http://integration-service:8082
+          predicates:
+            - Path=/api/integration/**
+
+        - id: integration-service-mock
+          uri: http://integration-service:8082
+          predicates:
+            - Path=/mock/**
+
+        - id: tracking-service-api
+          uri: http://tracking-service:8084
+          predicates:
+            - Path=/api/tracking/**
+
+        - id: driver-service-api
+          uri: http://driver-service:8083
+          predicates:
+            - Path=/api/drivers/**
