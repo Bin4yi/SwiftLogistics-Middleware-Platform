@@ -1,4 +1,4 @@
-// services/integration-service/src/main/java/com/swiftlogistics/integration/controller/WMSMockController.java
+// COMPLETE UPDATED WMSMockController.java
 package com.swiftlogistics.integration.controller;
 
 import org.slf4j.Logger;
@@ -8,6 +8,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Random;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -18,6 +21,19 @@ public class WMSMockController {
 
     private static final Logger logger = LoggerFactory.getLogger(WMSMockController.class);
     private final Random random = new Random();
+
+    @GetMapping("/health")
+    public ResponseEntity<Map<String, Object>> health() {
+        Map<String, Object> response = new HashMap<>();
+        response.put("service", "WMS Mock");
+        response.put("status", "UP");
+        response.put("timestamp", System.currentTimeMillis());
+        response.put("protocol", "TCP/IP (simulated via HTTP)");
+        response.put("endpoints", Arrays.asList("addPackage", "add-package", "removePackage"));
+        response.put("note", "Simulates Warehouse Management System");
+
+        return ResponseEntity.ok(response);
+    }
 
     @PostMapping(value = "/addPackage", consumes = MediaType.TEXT_PLAIN_VALUE, produces = MediaType.TEXT_PLAIN_VALUE)
     public ResponseEntity<String> addPackage(@RequestBody String tcpMessage) {
@@ -46,8 +62,15 @@ public class WMSMockController {
         String response = createTcpSuccessResponse("PACKAGE_ADDED", orderNumber,
                 "Package added successfully. Location: " + warehouseLocation + ", Tracking: " + trackingCode);
 
-        logger.info("WMS Mock: Package added for order: {} at location: {}", orderNumber, warehouseLocation);
+        logger.info("WMS Mock: Package addition successful for order: {} at location: {}", orderNumber, warehouseLocation);
         return ResponseEntity.ok(response);
+    }
+
+    // ADD: Support hyphenated endpoint
+    @PostMapping(value = "/add-package", consumes = MediaType.TEXT_PLAIN_VALUE, produces = MediaType.TEXT_PLAIN_VALUE)
+    public ResponseEntity<String> addPackageHyphenated(@RequestBody String tcpMessage) {
+        logger.info("WMS Mock: Received TCP package addition request (hyphenated endpoint)");
+        return addPackage(tcpMessage);
     }
 
     @PostMapping(value = "/removePackage", consumes = MediaType.TEXT_PLAIN_VALUE, produces = MediaType.TEXT_PLAIN_VALUE)
@@ -59,57 +82,29 @@ public class WMSMockController {
 
         // Simulate processing time
         try {
-            Thread.sleep(500 + random.nextInt(1000));
+            Thread.sleep(300 + random.nextInt(700));
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         }
 
-        String response = createTcpSuccessResponse("PACKAGE_REMOVED", orderNumber, "Package removed from warehouse");
-
-        logger.info("WMS Mock: Package removed for order: {}", orderNumber);
-        return ResponseEntity.ok(response);
-    }
-
-    @PostMapping(value = "/getStatus", consumes = MediaType.TEXT_PLAIN_VALUE, produces = MediaType.TEXT_PLAIN_VALUE)
-    public ResponseEntity<String> getPackageStatus(@RequestBody String tcpMessage) {
-        logger.debug("WMS Mock: Received TCP status request");
-
-        String orderNumber = extractFromTcpMessage(tcpMessage, "ORDER_NUMBER");
-
-        String[] statuses = {"RECEIVED", "IN_STORAGE", "PICKING", "PACKED", "READY_FOR_DISPATCH"};
-        String status = statuses[random.nextInt(statuses.length)];
-
-        String response = createTcpSuccessResponse("STATUS_RETRIEVED", orderNumber,
-                "Package status: " + status + ", Location: WH-A-" + random.nextInt(50));
-
+        String response = createTcpSuccessResponse("PACKAGE_REMOVED", orderNumber, "Package removed successfully");
+        logger.info("WMS Mock: Package removal successful for order: {}", orderNumber);
         return ResponseEntity.ok(response);
     }
 
     private String extractFromTcpMessage(String tcpMessage, String field) {
-        Pattern pattern = Pattern.compile(field + ":(.*?)\\n");
+        Pattern pattern = Pattern.compile(field + ":([^\\n]+)");
         Matcher matcher = pattern.matcher(tcpMessage);
         return matcher.find() ? matcher.group(1).trim() : "UNKNOWN";
     }
 
-    private String createTcpSuccessResponse(String command, String orderNumber, String message) {
-        return "SWIFT_WMS_PROTOCOL_V1\n" +
-                "RESPONSE:SUCCESS\n" +
-                "COMMAND:" + command + "\n" +
-                "ORDER_NUMBER:" + orderNumber + "\n" +
-                "MESSAGE:" + message + "\n" +
-                "TIMESTAMP:" + System.currentTimeMillis() + "\n" +
-                "SERVER_ID:WMS-SERVER-01\n" +
-                "END\n";
+    private String createTcpSuccessResponse(String operation, String orderNumber, String message) {
+        return String.format("STATUS:SUCCESS\nOPERATION:%s\nORDER_NUMBER:%s\nMESSAGE:%s\nTIMESTAMP:%s\nEND\n",
+                operation, orderNumber, message, LocalDateTime.now());
     }
 
-    private String createTcpErrorResponse(String command, String orderNumber, String error) {
-        return "SWIFT_WMS_PROTOCOL_V1\n" +
-                "RESPONSE:ERROR\n" +
-                "COMMAND:" + command + "\n" +
-                "ORDER_NUMBER:" + orderNumber + "\n" +
-                "ERROR:" + error + "\n" +
-                "TIMESTAMP:" + System.currentTimeMillis() + "\n" +
-                "SERVER_ID:WMS-SERVER-01\n" +
-                "END\n";
+    private String createTcpErrorResponse(String operation, String orderNumber, String error) {
+        return String.format("STATUS:ERROR\nOPERATION:%s\nORDER_NUMBER:%s\nERROR:%s\nTIMESTAMP:%s\nEND\n",
+                operation, orderNumber, error, LocalDateTime.now());
     }
 }

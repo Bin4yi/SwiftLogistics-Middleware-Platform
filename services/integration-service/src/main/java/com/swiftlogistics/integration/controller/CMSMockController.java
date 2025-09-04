@@ -1,4 +1,3 @@
-// services/integration-service/src/main/java/com/swiftlogistics/integration/controller/CMSMockController.java
 package com.swiftlogistics.integration.controller;
 
 import org.slf4j.Logger;
@@ -8,6 +7,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
 
@@ -17,6 +18,19 @@ public class CMSMockController {
 
     private static final Logger logger = LoggerFactory.getLogger(CMSMockController.class);
     private final Random random = new Random();
+
+    @GetMapping("/health")
+    public ResponseEntity<Map<String, Object>> health() {
+        Map<String, Object> response = new HashMap<>();
+        response.put("service", "CMS Mock");
+        response.put("status", "UP");
+        response.put("timestamp", System.currentTimeMillis());
+        response.put("protocol", "SOAP/XML");
+        response.put("endpoints", Arrays.asList("registerOrder", "register-order", "cancelOrder"));
+        response.put("note", "Simulates legacy Client Management System");
+
+        return ResponseEntity.ok(response);
+    }
 
     @PostMapping(value = "/registerOrder", consumes = MediaType.TEXT_XML_VALUE, produces = MediaType.TEXT_XML_VALUE)
     public ResponseEntity<String> registerOrder(@RequestBody String soapRequest) {
@@ -45,6 +59,13 @@ public class CMSMockController {
         return ResponseEntity.ok(responseXml);
     }
 
+    // ADD: Support hyphenated endpoint
+    @PostMapping(value = "/register-order", consumes = MediaType.TEXT_XML_VALUE, produces = MediaType.TEXT_XML_VALUE)
+    public ResponseEntity<String> registerOrderHyphenated(@RequestBody String soapRequest) {
+        logger.info("CMS Mock: Received SOAP order registration request (hyphenated endpoint)");
+        return registerOrder(soapRequest);
+    }
+
     @PostMapping(value = "/cancelOrder", consumes = MediaType.TEXT_XML_VALUE, produces = MediaType.TEXT_XML_VALUE)
     public ResponseEntity<String> cancelOrder(@RequestBody String soapRequest) {
         logger.info("CMS Mock: Received SOAP order cancellation request");
@@ -68,50 +89,58 @@ public class CMSMockController {
         // Simple extraction - in real implementation would use proper XML parsing
         int start = soapRequest.indexOf("<OrderNumber>") + 13;
         int end = soapRequest.indexOf("</OrderNumber>");
-        return start > 12 && end > start ? soapRequest.substring(start, end) : "UNKNOWN";
+        return start > 12 && end > start ?
+                soapRequest.substring(start, end) : "UNKNOWN";
     }
 
-    private String createSoapSuccessResponse(String orderNumber, String cmsOrderId) {
-        return "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
-                "<soap:Envelope xmlns:soap=\"http://schemas.xmlsoap.org/soap/envelope/\">\n" +
-                "    <soap:Body>\n" +
-                "        <RegisterOrderResponse xmlns=\"http://cms.swiftlogistics.com/\">\n" +
-                "            <result>SUCCESS</result>\n" +
-                "            <OrderNumber>" + orderNumber + "</OrderNumber>\n" +
-                "            <CMSOrderId>" + cmsOrderId + "</CMSOrderId>\n" +
-                "            <Message>Order registered successfully in CMS</Message>\n" +
-                "            <Timestamp>" + LocalDateTime.now() + "</Timestamp>\n" +
-                "        </RegisterOrderResponse>\n" +
-                "    </soap:Body>\n" +
-                "</soap:Envelope>";
+    private String createSoapSuccessResponse(String orderNumber, String cmsId) {
+        StringBuilder soap = new StringBuilder();
+        soap.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
+        soap.append("<soap:Envelope xmlns:soap=\"http://schemas.xmlsoap.org/soap/envelope/\">");
+        soap.append("<soap:Header/>");
+        soap.append("<soap:Body>");
+        soap.append("<RegisterOrderResponse>");
+        soap.append("<OrderNumber>").append(orderNumber).append("</OrderNumber>");
+        soap.append("<Status>SUCCESS</Status>");
+        soap.append("<CmsId>").append(cmsId).append("</CmsId>");
+        soap.append("<Message>Order registered successfully</Message>");
+        soap.append("</RegisterOrderResponse>");
+        soap.append("</soap:Body>");
+        soap.append("</soap:Envelope>");
+        return soap.toString();
     }
 
     private String createSoapErrorResponse(String error, String orderNumber) {
-        return "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
-                "<soap:Envelope xmlns:soap=\"http://schemas.xmlsoap.org/soap/envelope/\">\n" +
-                "    <soap:Body>\n" +
-                "        <soap:Fault>\n" +
-                "            <faultcode>Client</faultcode>\n" +
-                "            <faultstring>" + error + "</faultstring>\n" +
-                "            <detail>\n" +
-                "                <OrderNumber>" + orderNumber + "</OrderNumber>\n" +
-                "            </detail>\n" +
-                "        </soap:Fault>\n" +
-                "    </soap:Body>\n" +
-                "</soap:Envelope>";
+        StringBuilder soap = new StringBuilder();
+        soap.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
+        soap.append("<soap:Envelope xmlns:soap=\"http://schemas.xmlsoap.org/soap/envelope/\">");
+        soap.append("<soap:Header/>");
+        soap.append("<soap:Body>");
+        soap.append("<soap:Fault>");
+        soap.append("<faultcode>Client</faultcode>");
+        soap.append("<faultstring>").append(error).append("</faultstring>");
+        soap.append("<detail>");
+        soap.append("<OrderNumber>").append(orderNumber).append("</OrderNumber>");
+        soap.append("</detail>");
+        soap.append("</soap:Fault>");
+        soap.append("</soap:Body>");
+        soap.append("</soap:Envelope>");
+        return soap.toString();
     }
 
     private String createSoapCancelResponse(String orderNumber) {
-        return "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
-                "<soap:Envelope xmlns:soap=\"http://schemas.xmlsoap.org/soap/envelope/\">\n" +
-                "    <soap:Body>\n" +
-                "        <CancelOrderResponse xmlns=\"http://cms.swiftlogistics.com/\">\n" +
-                "            <result>SUCCESS</result>\n" +
-                "            <OrderNumber>" + orderNumber + "</OrderNumber>\n" +
-                "            <Message>Order cancelled successfully</Message>\n" +
-                "            <Timestamp>" + LocalDateTime.now() + "</Timestamp>\n" +
-                "        </CancelOrderResponse>\n" +
-                "    </soap:Body>\n" +
-                "</soap:Envelope>";
+        StringBuilder soap = new StringBuilder();
+        soap.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
+        soap.append("<soap:Envelope xmlns:soap=\"http://schemas.xmlsoap.org/soap/envelope/\">");
+        soap.append("<soap:Header/>");
+        soap.append("<soap:Body>");
+        soap.append("<CancelOrderResponse>");
+        soap.append("<OrderNumber>").append(orderNumber).append("</OrderNumber>");
+        soap.append("<Status>CANCELLED</Status>");
+        soap.append("<Message>Order cancelled successfully</Message>");
+        soap.append("</CancelOrderResponse>");
+        soap.append("</soap:Body>");
+        soap.append("</soap:Envelope>");
+        return soap.toString();
     }
 }

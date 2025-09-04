@@ -1,3 +1,4 @@
+# infrastructure/api-gateway/src/main/resources/application.yml
 server:
   port: 8080
 
@@ -6,118 +7,86 @@ spring:
     name: api-gateway
 
   cloud:
-    gateway:
-      discovery:
-        locator:
-          enabled: false  # DISABLE automatic discovery to avoid DNS issues
-      globalcors:
-        cors-configurations:
-          '[/**]':
-            allowedOriginPatterns: "*"
-            allowedMethods:
-              - GET
-              - POST
-              - PUT
-              - DELETE
-              - OPTIONS
-            allowedHeaders: "*"
-            allowCredentials: true
-            maxAge: 3600
-      routes:
-        # DIRECT IP-BASED ROUTING - NO DNS RESOLUTION NEEDED
-
-        # Order Service Routes - Direct IP
-        - id: order-service-api
-          uri: http://localhost:8081  # Direct URL instead of lb://
-          predicates:
-            - Path=/api/orders/**
-
-        # Integration Service Routes - Direct IP
-        - id: integration-service-api
-          uri: http://localhost:8082  # Direct URL instead of lb://
-          predicates:
-            - Path=/api/integration/**
-
-        # Integration Service Mock Routes - Direct IP
-        - id: integration-service-mock
-          uri: http://localhost:8082  # Direct URL instead of lb://
-          predicates:
-            - Path=/mock/**
-
-        # Tracking Service Routes - Direct IP
-        - id: tracking-service-api
-          uri: http://localhost:8084  # Direct URL instead of lb://
-          predicates:
-            - Path=/api/tracking/**
-
-        # Driver Service Routes - Direct IP
-        - id: driver-service-api
-          uri: http://localhost:8083  # Direct URL instead of lb://
-          predicates:
-            - Path=/api/drivers/**
-
     config:
       import-check:
         enabled: false
+    gateway:
+      discovery:
+        locator:
+          enabled: true
+          lowerCaseServiceId: true
+      routes:
+        # Integration Service API Routes - FINAL FIX: NO StripPrefix
+        - id: integration-service-api
+          uri: lb://integration-service
+          predicates:
+            - Path=/api/integration/**
+            # NO FILTERS - Pass the full path /api/integration/** to the service
 
-# MINIMAL EUREKA CONFIG - JUST FOR MONITORING
+        # Mock System Routes - These work fine
+        - id: integration-service-mock
+          uri: lb://integration-service
+          predicates:
+            - Path=/mock/**
+            # No StripPrefix - keep full path
+
+        # Order Service Routes - Order service needs /api stripped
+        - id: order-service
+          uri: lb://order-service
+          predicates:
+            - Path=/api/orders/**
+            # NO FILTERS - Order service controller already has /api/orders mapping
+
+        # Tracking Service Routes
+        - id: tracking-service
+          uri: lb://tracking-service
+          predicates:
+            - Path=/api/tracking/**
+            # NO FILTERS - Let service handle the full path
+
+        # Driver Service Routes
+        - id: driver-service
+          uri: lb://driver-service
+          predicates:
+            - Path=/api/drivers/**
+          # NO FILTERS - Let service handle the full path
+
+      # Global CORS Configuration
+      globalcors:
+        cors-configurations:
+          '[/**]':
+            allowedOrigins: "*"
+            allowedMethods: "*"
+            allowedHeaders: "*"
+            allowCredentials: false
+
 eureka:
   client:
-    enabled: false  # DISABLE Eureka client to avoid DNS issues
-    register-with-eureka: false
-    fetch-registry: false
+    serviceUrl:
+      defaultZone: http://localhost:8761/eureka/
 
-# Management and Actuator
+logging:
+  pattern:
+    console: "%d{HH:mm:ss} [API-Gateway] %-5level %logger{36} - %msg%n"
+  level:
+    org.springframework.cloud.gateway.route: DEBUG
+    org.springframework.cloud.gateway: DEBUG
+    org.springframework.web: DEBUG
+
+# Actuator endpoints for debugging
 management:
   endpoints:
     web:
       exposure:
         include: health,info,gateway,routes
   endpoint:
-    health:
-      show-details: always
     gateway:
       enabled: true
 
-# Logging
-logging:
-  level:
-    com.swiftlogistics.gateway: DEBUG
-    org.springframework.cloud.gateway: INFO
-    reactor.netty.http.client: INFO
-    io.netty.resolver: INFO
-  pattern:
-    console: "%d{HH:mm:ss} [API-Gateway] %-5level %logger{36} - %msg%n"
-
 ---
-# Docker Profile - For containerized deployment
 spring:
   profiles: docker
-  cloud:
-    gateway:
-      routes:
-        # Docker service names instead of localhost
-        - id: order-service-api
-          uri: http://order-service:8081
-          predicates:
-            - Path=/api/orders/**
-
-        - id: integration-service-api
-          uri: http://integration-service:8082
-          predicates:
-            - Path=/api/integration/**
-
-        - id: integration-service-mock
-          uri: http://integration-service:8082
-          predicates:
-            - Path=/mock/**
-
-        - id: tracking-service-api
-          uri: http://tracking-service:8084
-          predicates:
-            - Path=/api/tracking/**
-
-        - id: driver-service-api
-          uri: http://driver-service:8083
-          predicates:
-            - Path=/api/drivers/**
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: http://eureka-server:8761/eureka/

@@ -6,11 +6,17 @@ public class RouteOptimizationRequest {
     private String pickupAddress;
     private String deliveryAddress;
     private String priority;
-    private Double packageWeight;
     private String vehicleType;
+    private String timeWindow;
 
     // Constructors
     public RouteOptimizationRequest() {}
+
+    public RouteOptimizationRequest(String orderNumber, String pickupAddress, String deliveryAddress) {
+        this.orderNumber = orderNumber;
+        this.pickupAddress = pickupAddress;
+        this.deliveryAddress = deliveryAddress;
+    }
 
     // Getters and Setters
     public String getOrderNumber() { return orderNumber; }
@@ -25,9 +31,10 @@ public class RouteOptimizationRequest {
     public String getPriority() { return priority; }
     public void setPriority(String priority) { this.priority = priority; }
 
-    public Double getPackageWeight() { return packageWeight; }
-    public void setPackageWeight(Double packageWeight) { this.packageWeight = packageWeight; }
-
     public String getVehicleType() { return vehicleType; }
     public void setVehicleType(String vehicleType) { this.vehicleType = vehicleType; }
+
+    public String getTimeWindow() { return timeWindow; }
+    public void setTimeWindow(String timeWindow) { this.timeWindow = timeWindow; }
 }
+

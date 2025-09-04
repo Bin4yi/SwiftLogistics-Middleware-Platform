@@ -8,6 +8,9 @@ public class OrderMessage {
     private String deliveryAddress;
     private String packageDescription;
     private String priority;
+    private String contactNumber;
+    private Double packageWeight;
+    private String specialInstructions;
 
     // Constructors
     public OrderMessage() {}
@@ -30,4 +33,14 @@ public class OrderMessage {
 
     public String getPriority() { return priority; }
     public void setPriority(String priority) { this.priority = priority; }
+
+    public String getContactNumber() { return contactNumber; }
+    public void setContactNumber(String contactNumber) { this.contactNumber = contactNumber; }
+
+    public Double getPackageWeight() { return packageWeight; }
+    public void setPackageWeight(Double packageWeight) { this.packageWeight = packageWeight; }
+
+    public String getSpecialInstructions() { return specialInstructions; }
+    public void setSpecialInstructions(String specialInstructions) { this.specialInstructions = specialInstructions; }
 }
+

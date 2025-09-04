@@ -6,9 +6,11 @@ import com.swiftlogistics.integration.dto.ProcessingResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.*;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 
 import java.io.*;
 import java.net.Socket;
@@ -20,17 +22,18 @@ public class WMSIntegrationService {
 
     private static final Logger logger = LoggerFactory.getLogger(WMSIntegrationService.class);
 
-    @Value("${external-systems.wms.host}")
+    @Value("${external-systems.wms.host:localhost}")
     private String wmsHost;
 
-    @Value("${external-systems.wms.port}")
+    @Value("${external-systems.wms.port:9999}")
     private int wmsPort;
 
-    @Value("${external-systems.wms.timeout}")
+    @Value("${external-systems.wms.timeout:15000}")
     private int wmsTimeout;
 
     // For demo purposes, we'll simulate TCP/IP with REST calls to our mock endpoint
     private final String mockWmsEndpoint = "http://localhost:8082/mock/wms";
+    private final RestTemplate restTemplate = new RestTemplate();
 
     @Retryable(value = {Exception.class}, maxAttempts = 3, backoff = @Backoff(delay = 1000))
     public ProcessingResult addPackage(OrderMessage orderMessage) {
@@ -54,11 +57,11 @@ public class WMSIntegrationService {
         } catch (Exception e) {
             logger.error("Error adding package to WMS for order {}: {}",
                     orderMessage.getOrderNumber(), e.getMessage(), e);
-            return ProcessingResult.failure("WMS integration error: " + e.getMessage());
+            return ProcessingResult.failure("WMS error: " + e.getMessage());
         }
     }
 
-    @Retryable(value = {Exception.class}, maxAttempts = 2, backoff = @Backoff(delay = 500))
+    @Retryable(value = {Exception.class}, maxAttempts = 3, backoff = @Backoff(delay = 1000))
     public ProcessingResult removePackage(String orderNumber) {
         logger.info("Removing package for order {} from WMS (compensation)", orderNumber);
 
@@ -75,67 +78,14 @@ public class WMSIntegrationService {
             }
 
         } catch (Exception e) {
-            logger.error("Error removing package from WMS for order {}: {}",
-                    orderNumber, e.getMessage(), e);
+            logger.error("Error removing package from WMS for order {}: {}", orderNumber, e.getMessage(), e);
             return ProcessingResult.failure("WMS removal error: " + e.getMessage());
         }
     }
 
-    public ProcessingResult getPackageStatus(String orderNumber) {
-        logger.debug("Getting package status for order: {}", orderNumber);
-
-        try {
-            String tcpMessage = createTcpMessage("GET_STATUS", orderNumber);
-            String response = simulateTcpCall("getStatus", tcpMessage);
-
-            if (response.contains("SUCCESS")) {
-                return ProcessingResult.success("Package status retrieved", response);
-            } else {
-                return ProcessingResult.failure("Failed to get package status: " + response);
-            }
-
-        } catch (Exception e) {
-            logger.error("Error getting package status for order {}: {}",
-                    orderNumber, e.getMessage(), e);
-            return ProcessingResult.failure("WMS status check error: " + e.getMessage());
-        }
-    }
-
-    // Real TCP/IP implementation (commented out for demo)
-    /*
-    private String sendTcpMessage(String message) throws IOException {
-        try (Socket socket = new Socket(wmsHost, wmsPort)) {
-            socket.setSoTimeout(wmsTimeout);
-
-            // Send message
-            PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
-            out.println(message);
-
-            // Read response
-            BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-            StringBuilder response = new StringBuilder();
-            String line;
-
-            while ((line = in.readLine()) != null) {
-                response.append(line).append("\n");
-                if (line.contains("END")) {
-                    break;
-                }
-            }
-
-            return response.toString();
-
-        } catch (SocketTimeoutException e) {
-            throw new IOException("WMS TCP connection timeout", e);
-        }
-    }
-    */
-
-    private String createTcpMessage(String command, Object data) {
+    private String createTcpMessage(String operation, Object data) {
         StringBuilder message = new StringBuilder();
-        message.append("SWIFT_WMS_PROTOCOL_V1\n");
-        message.append("COMMAND:").append(command).append("\n");
-        message.append("TIMESTAMP:").append(System.currentTimeMillis()).append("\n");
+        message.append("OPERATION:").append(operation).append("\n");
 
         if (data instanceof OrderMessage) {
             OrderMessage order = (OrderMessage) data;
@@ -156,19 +106,16 @@ public class WMSIntegrationService {
     // Simulate TCP call with HTTP for demo purposes
     private String simulateTcpCall(String endpoint, String tcpMessage) {
         try {
-            // In a real implementation, this would be a TCP socket call
-            // For demo, we're using REST to simulate
-            org.springframework.web.client.RestTemplate restTemplate =
-                    new org.springframework.web.client.RestTemplate();
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.TEXT_PLAIN);
 
-            org.springframework.http.HttpHeaders headers = new org.springframework.http.HttpHeaders();
-            headers.setContentType(org.springframework.http.MediaType.TEXT_PLAIN);
+            HttpEntity<String> request = new HttpEntity<>(tcpMessage, headers);
 
-            org.springframework.http.HttpEntity<String> request =
-                    new org.springframework.http.HttpEntity<>(tcpMessage, headers);
-
-            org.springframework.http.ResponseEntity<String> response =
-                    restTemplate.postForEntity(mockWmsEndpoint + "/" + endpoint, request, String.class);
+            ResponseEntity<String> response = restTemplate.postForEntity(
+                    mockWmsEndpoint + "/" + endpoint,
+                    request,
+                    String.class
+            );
 
             return response.getBody();
 
@@ -177,4 +124,30 @@ public class WMSIntegrationService {
             return "ERROR: " + e.getMessage();
         }
     }
+
+    /**
+     * Real TCP/IP implementation - commented out for demo
+     * In production, this would replace the simulateTcpCall method
+     */
+    /*
+    private String realTcpCall(String message) throws IOException {
+        try (Socket socket = new Socket(wmsHost, wmsPort)) {
+            socket.setSoTimeout(wmsTimeout);
+
+            // Send message
+            try (PrintWriter out = new PrintWriter(
+                new OutputStreamWriter(socket.getOutputStream(), StandardCharsets.UTF_8), true)) {
+                out.println(message);
+            }
+
+            // Read response
+            try (BufferedReader in = new BufferedReader(
+                new InputStreamReader(socket.getInputStream(), StandardCharsets.UTF_8))) {
+                return in.readLine();
+            }
+        } catch (SocketTimeoutException e) {
+            throw new IOException("WMS TCP call timeout", e);
+        }
+    }
+    */
 }

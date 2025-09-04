@@ -38,18 +38,46 @@ public class OrderProcessingService {
     @Autowired
     private IntegrationTransactionRepository transactionRepository;
 
+    /**
+     * Main entry point for processing order integration via API
+     * This is the method called by IntegrationController
+     */
+    public ProcessingResult processOrderIntegration(OrderMessage orderMessage) {
+        logger.info("Starting integration processing for order: {}", orderMessage.getOrderNumber());
+
+        // Create transaction record for saga pattern
+        IntegrationTransaction transaction = createNewTransaction(orderMessage.getOrderNumber());
+
+        try {
+            // Execute saga steps synchronously for API calls
+            executeSagaSteps(transaction, orderMessage);
+
+            logger.info("Order {} integration processing completed successfully", orderMessage.getOrderNumber());
+            return ProcessingResult.success(
+                    "Order integration completed successfully",
+                    "Transaction ID: " + transaction.getTransactionId()
+            );
+
+        } catch (Exception e) {
+            logger.error("Error processing order integration {}: {}", orderMessage.getOrderNumber(), e.getMessage(), e);
+            handleSagaFailure(transaction, e.getMessage());
+            return ProcessingResult.failure(
+                    "Order integration failed: " + e.getMessage(),
+                    "Transaction ID: " + transaction.getTransactionId()
+            );
+        }
+    }
+
+    /**
+     * Message queue listener for async order processing
+     */
     @RabbitListener(queues = "${rabbitmq.queues.order-processing:order.processing.queue}")
     public void processOrder(Map<String, Object> orderData) {
         String orderNumber = (String) orderData.get("orderNumber");
-        logger.info("Processing order: {}", orderNumber);
+        logger.info("Processing order from queue: {}", orderNumber);
 
         // Create transaction record for saga pattern
-        IntegrationTransaction transaction = new IntegrationTransaction();
-        transaction.setTransactionId(UUID.randomUUID().toString());
-        transaction.setOrderNumber(orderNumber);
-        transaction.setStatus("STARTED");
-        transaction.setCreatedAt(LocalDateTime.now());
-        transaction = transactionRepository.save(transaction);
+        IntegrationTransaction transaction = createNewTransaction(orderNumber);
 
         try {
             OrderMessage orderMessage = mapToOrderMessage(orderData);
@@ -63,6 +91,15 @@ public class OrderProcessingService {
         }
     }
 
+    private IntegrationTransaction createNewTransaction(String orderNumber) {
+        IntegrationTransaction transaction = new IntegrationTransaction();
+        transaction.setTransactionId(UUID.randomUUID().toString());
+        transaction.setOrderNumber(orderNumber);
+        transaction.setStatus("STARTED");
+        transaction.setCreatedAt(LocalDateTime.now());
+        return transactionRepository.save(transaction);
+    }
+
     private void executeSagaSteps(IntegrationTransaction transaction, OrderMessage orderMessage) {
         try {
             // Step 1: Register with CMS
@@ -72,11 +109,11 @@ public class OrderProcessingService {
 
             ProcessingResult cmsResult = cmsIntegrationService.registerOrder(orderMessage);
             if (!cmsResult.isSuccess()) {
-                throw new RuntimeException("CMS registration failed: " + cmsResult.getErrorMessage());
+                throw new RuntimeException("CMS registration failed: " + cmsResult.getMessage());
             }
 
             transaction.setCmsStatus("COMPLETED");
-            transaction.setCmsResponse(cmsResult.getResponse());
+            transaction.setCmsResponse(cmsResult.getDetails());
             transactionRepository.save(transaction);
 
             // Step 2: Add to WMS
@@ -87,12 +124,13 @@ public class OrderProcessingService {
             ProcessingResult wmsResult = wmsIntegrationService.addPackage(orderMessage);
             if (!wmsResult.isSuccess()) {
                 // Compensate CMS
+                logger.warn("WMS failed, compensating CMS for order: {}", orderMessage.getOrderNumber());
                 cmsIntegrationService.cancelOrder(orderMessage.getOrderNumber());
-                throw new RuntimeException("WMS processing failed: " + wmsResult.getErrorMessage());
+                throw new RuntimeException("WMS processing failed: " + wmsResult.getMessage());
             }
 
             transaction.setWmsStatus("COMPLETED");
-            transaction.setWmsResponse(wmsResult.getResponse());
+            transaction.setWmsResponse(wmsResult.getDetails());
             transactionRepository.save(transaction);
 
             // Step 3: Optimize route with ROS
@@ -103,13 +141,14 @@ public class OrderProcessingService {
             ProcessingResult rosResult = rosIntegrationService.optimizeRoute(orderMessage);
             if (!rosResult.isSuccess()) {
                 // Compensate WMS and CMS
+                logger.warn("ROS failed, compensating WMS and CMS for order: {}", orderMessage.getOrderNumber());
                 wmsIntegrationService.removePackage(orderMessage.getOrderNumber());
                 cmsIntegrationService.cancelOrder(orderMessage.getOrderNumber());
-                throw new RuntimeException("ROS processing failed: " + rosResult.getErrorMessage());
+                throw new RuntimeException("ROS processing failed: " + rosResult.getMessage());
             }
 
             transaction.setRosStatus("COMPLETED");
-            transaction.setRosResponse(rosResult.getResponse());
+            transaction.setRosResponse(rosResult.getDetails());
             transaction.setStatus("COMPLETED");
             transaction.setCompletedAt(LocalDateTime.now());
             transactionRepository.save(transaction);
@@ -166,6 +205,15 @@ public class OrderProcessingService {
         message.setDeliveryAddress((String) orderData.get("deliveryAddress"));
         message.setPackageDescription((String) orderData.get("packageDescription"));
         message.setPriority((String) orderData.get("priority"));
+        message.setContactNumber((String) orderData.get("contactNumber"));
+
+        // Handle numeric fields safely
+        Object weight = orderData.get("packageWeight");
+        if (weight instanceof Number) {
+            message.setPackageWeight(((Number) weight).doubleValue());
+        }
+
+        message.setSpecialInstructions((String) orderData.get("specialInstructions"));
         return message;
     }
 
@@ -178,5 +226,52 @@ public class OrderProcessingService {
     public IntegrationTransaction getTransactionStatus(String orderNumber) {
         return transactionRepository.findByOrderNumber(orderNumber)
                 .orElse(null);
+    }
+
+    /**
+     * Get all transactions for monitoring/debugging
+     */
+    public java.util.List<IntegrationTransaction> getAllTransactions() {
+        return transactionRepository.findAll();
+    }
+
+    /**
+     * Get transactions by status
+     */
+    public java.util.List<IntegrationTransaction> getTransactionsByStatus(String status) {
+        return transactionRepository.findByStatus(status);
+    }
+
+    /**
+     * Retry failed transaction
+     */
+    public ProcessingResult retryTransaction(String orderNumber) {
+        IntegrationTransaction transaction = getTransactionStatus(orderNumber);
+        if (transaction == null) {
+            return ProcessingResult.failure("Transaction not found for order: " + orderNumber);
+        }
+
+        if (!"FAILED".equals(transaction.getStatus())) {
+            return ProcessingResult.failure("Can only retry failed transactions");
+        }
+
+        try {
+            // Reset transaction status
+            transaction.setStatus("RETRY");
+            transaction.setErrorMessage(null);
+            transactionRepository.save(transaction);
+
+            // Create order message and retry
+            OrderMessage orderMessage = createOrderMessageFromTransaction(transaction);
+            // You would need to reconstruct the full order message from stored data
+            // For now, we'll just return a placeholder
+
+            executeSagaSteps(transaction, orderMessage);
+            return ProcessingResult.success("Transaction retry completed successfully");
+
+        } catch (Exception e) {
+            handleSagaFailure(transaction, "Retry failed: " + e.getMessage());
+            return ProcessingResult.failure("Transaction retry failed: " + e.getMessage());
+        }
     }
 }
