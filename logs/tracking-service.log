@@ -335,3 +335,235 @@ INSERT INTO delivery_locations (delivery_id, latitude, longitude, timestamp, add
 	at com.zaxxer.hikari.pool.HikariProxyStatement.execute(HikariProxyStatement.java)
 	at org.springframework.jdbc.datasource.init.ScriptUtils.executeSqlScript(ScriptUtils.java:261)
 	... 28 common frames omitted
+2025-09-04 18:48:36 [main] INFO  [c.s.t.TrackingServiceApplication] - Starting TrackingServiceApplication using Java 22.0.1 on DESKTOP-5GJ276L with PID 27284 (C:\Users\Dell\Desktop\Middleware\services\tracking-service\target\classes started by Dell in C:\Users\Dell\Desktop\Middleware)
+2025-09-04 18:48:36 [main] DEBUG [c.s.t.TrackingServiceApplication] - Running with Spring Boot v2.7.14, Spring v5.3.29
+2025-09-04 18:48:36 [main] INFO  [c.s.t.TrackingServiceApplication] - No active profile set, falling back to 1 default profile: "default"
+2025-09-04 18:48:37 [main] WARN  [o.s.b.c.config.ConfigDataEnvironment] - Property 'spring.profiles' imported from location 'class path resource [application.yml]' is invalid and should be replaced with 'spring.config.activate.on-profile' [origin: class path resource [application.yml] - 154:13]
+2025-09-04 18:48:37 [main] WARN  [o.s.b.c.config.ConfigDataEnvironment] - Property 'spring.profiles' imported from location 'class path resource [application.yml]' is invalid and should be replaced with 'spring.config.activate.on-profile' [origin: class path resource [application.yml] - 131:13]
+2025-09-04 18:48:38 [main] INFO  [o.s.d.r.c.RepositoryConfigurationDelegate] - Multiple Spring Data modules found, entering strict repository configuration mode
+2025-09-04 18:48:38 [main] INFO  [o.s.d.r.c.RepositoryConfigurationDelegate] - Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2025-09-04 18:48:39 [main] INFO  [o.s.d.r.c.RepositoryConfigurationDelegate] - Finished Spring Data repository scanning in 329 ms. Found 2 JPA repository interfaces.
+2025-09-04 18:48:39 [main] INFO  [o.s.d.r.c.RepositoryConfigurationDelegate] - Multiple Spring Data modules found, entering strict repository configuration mode
+2025-09-04 18:48:39 [main] INFO  [o.s.d.r.c.RepositoryConfigurationDelegate] - Bootstrapping Spring Data Redis repositories in DEFAULT mode.
+2025-09-04 18:48:39 [main] INFO  [o.s.d.r.c.RepositoryConfigurationExtensionSupport] - Spring Data Redis - Could not safely identify store assignment for repository candidate interface com.swiftlogistics.tracking.repository.DeliveryTrackingRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository
+2025-09-04 18:48:39 [main] INFO  [o.s.d.r.c.RepositoryConfigurationExtensionSupport] - Spring Data Redis - Could not safely identify store assignment for repository candidate interface com.swiftlogistics.tracking.repository.TrackingEventRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository
+2025-09-04 18:48:39 [main] INFO  [o.s.d.r.c.RepositoryConfigurationDelegate] - Finished Spring Data repository scanning in 10 ms. Found 0 Redis repository interfaces.
+2025-09-04 18:48:39 [main] ERROR [o.s.boot.SpringApplication] - Application run failed
+java.lang.IllegalStateException: Error processing condition on org.springframework.cloud.loadbalancer.config.LoadBalancerAutoConfiguration.loadBalancerClientFactory
+	at org.springframework.boot.autoconfigure.condition.SpringBootCondition.matches(SpringBootCondition.java:60)
+	at org.springframework.context.annotation.ConditionEvaluator.shouldSkip(ConditionEvaluator.java:108)
+	at org.springframework.context.annotation.ConfigurationClassBeanDefinitionReader.loadBeanDefinitionsForBeanMethod(ConfigurationClassBeanDefinitionReader.java:193)
+	at org.springframework.context.annotation.ConfigurationClassBeanDefinitionReader.loadBeanDefinitionsForConfigurationClass(ConfigurationClassBeanDefinitionReader.java:153)
+	at org.springframework.context.annotation.ConfigurationClassBeanDefinitionReader.loadBeanDefinitions(ConfigurationClassBeanDefinitionReader.java:129)
+	at org.springframework.context.annotation.ConfigurationClassPostProcessor.processConfigBeanDefinitions(ConfigurationClassPostProcessor.java:343)
+	at org.springframework.context.annotation.ConfigurationClassPostProcessor.postProcessBeanDefinitionRegistry(ConfigurationClassPostProcessor.java:247)
+	at org.springframework.context.support.PostProcessorRegistrationDelegate.invokeBeanDefinitionRegistryPostProcessors(PostProcessorRegistrationDelegate.java:311)
+	at org.springframework.context.support.PostProcessorRegistrationDelegate.invokeBeanFactoryPostProcessors(PostProcessorRegistrationDelegate.java:112)
+	at org.springframework.context.support.AbstractApplicationContext.invokeBeanFactoryPostProcessors(AbstractApplicationContext.java:748)
+	at org.springframework.context.support.AbstractApplicationContext.refresh(AbstractApplicationContext.java:564)
+	at org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext.refresh(ServletWebServerApplicationContext.java:147)
+	at org.springframework.boot.SpringApplication.refresh(SpringApplication.java:731)
+	at org.springframework.boot.SpringApplication.refreshContext(SpringApplication.java:408)
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:307)
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:1303)
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:1292)
+	at com.swiftlogistics.tracking.TrackingServiceApplication.main(TrackingServiceApplication.java:15)
+Caused by: java.lang.IllegalStateException: Failed to introspect Class [org.springframework.cloud.loadbalancer.config.LoadBalancerAutoConfiguration] from ClassLoader [jdk.internal.loader.ClassLoaders$AppClassLoader@76ed5528]
+	at org.springframework.util.ReflectionUtils.getDeclaredMethods(ReflectionUtils.java:485)
+	at org.springframework.util.ReflectionUtils.doWithMethods(ReflectionUtils.java:361)
+	at org.springframework.util.ReflectionUtils.getUniqueDeclaredMethods(ReflectionUtils.java:418)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.lambda$getTypeForFactoryMethod$2(AbstractAutowireCapableBeanFactory.java:765)
+	at java.base/java.util.concurrent.ConcurrentHashMap.computeIfAbsent(ConcurrentHashMap.java:1710)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.getTypeForFactoryMethod(AbstractAutowireCapableBeanFactory.java:764)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.determineTargetType(AbstractAutowireCapableBeanFactory.java:703)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.predictBeanType(AbstractAutowireCapableBeanFactory.java:674)
+	at org.springframework.beans.factory.support.AbstractBeanFactory.isFactoryBean(AbstractBeanFactory.java:1684)
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.doGetBeanNamesForType(DefaultListableBeanFactory.java:570)
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.getBeanNamesForType(DefaultListableBeanFactory.java:542)
+	at org.springframework.boot.autoconfigure.condition.OnBeanCondition.collectBeanNamesForType(OnBeanCondition.java:246)
+	at org.springframework.boot.autoconfigure.condition.OnBeanCondition.getBeanNamesForType(OnBeanCondition.java:239)
+	at org.springframework.boot.autoconfigure.condition.OnBeanCondition.getBeanNamesForType(OnBeanCondition.java:229)
+	at org.springframework.boot.autoconfigure.condition.OnBeanCondition.getMatchingBeans(OnBeanCondition.java:182)
+	at org.springframework.boot.autoconfigure.condition.OnBeanCondition.getMatchOutcome(OnBeanCondition.java:157)
+	at org.springframework.boot.autoconfigure.condition.SpringBootCondition.matches(SpringBootCondition.java:47)
+	... 17 common frames omitted
+Caused by: java.lang.NoClassDefFoundError: org/springframework/beans/factory/aot/BeanRegistrationAotProcessor
+	at java.base/java.lang.ClassLoader.defineClass1(Native Method)
+	at java.base/java.lang.ClassLoader.defineClass(ClassLoader.java:1023)
+	at java.base/java.security.SecureClassLoader.defineClass(SecureClassLoader.java:150)
+	at java.base/jdk.internal.loader.BuiltinClassLoader.defineClass(BuiltinClassLoader.java:862)
+	at java.base/jdk.internal.loader.BuiltinClassLoader.findClassOnClassPathOrNull(BuiltinClassLoader.java:760)
+	at java.base/jdk.internal.loader.BuiltinClassLoader.loadClassOrNull(BuiltinClassLoader.java:681)
+	at java.base/jdk.internal.loader.BuiltinClassLoader.loadClass(BuiltinClassLoader.java:639)
+	at java.base/jdk.internal.loader.ClassLoaders$AppClassLoader.loadClass(ClassLoaders.java:188)
+	at java.base/java.lang.ClassLoader.loadClass(ClassLoader.java:525)
+	at java.base/java.lang.Class.getDeclaredMethods0(Native Method)
+	at java.base/java.lang.Class.privateGetDeclaredMethods(Class.java:3601)
+	at java.base/java.lang.Class.getDeclaredMethods(Class.java:2686)
+	at org.springframework.util.ReflectionUtils.getDeclaredMethods(ReflectionUtils.java:467)
+	... 33 common frames omitted
+Caused by: java.lang.ClassNotFoundException: org.springframework.beans.factory.aot.BeanRegistrationAotProcessor
+	at java.base/jdk.internal.loader.BuiltinClassLoader.loadClass(BuiltinClassLoader.java:641)
+	at java.base/jdk.internal.loader.ClassLoaders$AppClassLoader.loadClass(ClassLoaders.java:188)
+	at java.base/java.lang.ClassLoader.loadClass(ClassLoader.java:525)
+	... 46 common frames omitted
+2025-09-04 18:48:39 [main] WARN  [o.s.boot.SpringApplication] - Unable to close ApplicationContext
+java.lang.IllegalStateException: Failed to introspect Class [org.springframework.cloud.loadbalancer.config.LoadBalancerAutoConfiguration] from ClassLoader [jdk.internal.loader.ClassLoaders$AppClassLoader@76ed5528]
+	at org.springframework.util.ReflectionUtils.getDeclaredMethods(ReflectionUtils.java:485)
+	at org.springframework.util.ReflectionUtils.doWithMethods(ReflectionUtils.java:361)
+	at org.springframework.util.ReflectionUtils.getUniqueDeclaredMethods(ReflectionUtils.java:418)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.lambda$getTypeForFactoryMethod$2(AbstractAutowireCapableBeanFactory.java:765)
+	at java.base/java.util.concurrent.ConcurrentHashMap.computeIfAbsent(ConcurrentHashMap.java:1710)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.getTypeForFactoryMethod(AbstractAutowireCapableBeanFactory.java:764)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.determineTargetType(AbstractAutowireCapableBeanFactory.java:703)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.predictBeanType(AbstractAutowireCapableBeanFactory.java:674)
+	at org.springframework.beans.factory.support.AbstractBeanFactory.isFactoryBean(AbstractBeanFactory.java:1684)
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.doGetBeanNamesForType(DefaultListableBeanFactory.java:570)
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.getBeanNamesForType(DefaultListableBeanFactory.java:542)
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.getBeansOfType(DefaultListableBeanFactory.java:669)
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.getBeansOfType(DefaultListableBeanFactory.java:661)
+	at org.springframework.context.support.AbstractApplicationContext.getBeansOfType(AbstractApplicationContext.java:1303)
+	at org.springframework.boot.SpringApplication.getExitCodeFromMappedException(SpringApplication.java:864)
+	at org.springframework.boot.SpringApplication.getExitCodeFromException(SpringApplication.java:852)
+	at org.springframework.boot.SpringApplication.handleExitCode(SpringApplication.java:839)
+	at org.springframework.boot.SpringApplication.handleRunFailure(SpringApplication.java:779)
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:317)
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:1303)
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:1292)
+	at com.swiftlogistics.tracking.TrackingServiceApplication.main(TrackingServiceApplication.java:15)
+Caused by: java.lang.NoClassDefFoundError: org/springframework/beans/factory/aot/BeanRegistrationAotProcessor
+	at java.base/java.lang.ClassLoader.defineClass1(Native Method)
+	at java.base/java.lang.ClassLoader.defineClass(ClassLoader.java:1023)
+	at java.base/java.security.SecureClassLoader.defineClass(SecureClassLoader.java:150)
+	at java.base/jdk.internal.loader.BuiltinClassLoader.defineClass(BuiltinClassLoader.java:862)
+	at java.base/jdk.internal.loader.BuiltinClassLoader.findClassOnClassPathOrNull(BuiltinClassLoader.java:760)
+	at java.base/jdk.internal.loader.BuiltinClassLoader.loadClassOrNull(BuiltinClassLoader.java:681)
+	at java.base/jdk.internal.loader.BuiltinClassLoader.loadClass(BuiltinClassLoader.java:639)
+	at java.base/jdk.internal.loader.ClassLoaders$AppClassLoader.loadClass(ClassLoaders.java:188)
+	at java.base/java.lang.ClassLoader.loadClass(ClassLoader.java:525)
+	at java.base/java.lang.Class.getDeclaredMethods0(Native Method)
+	at java.base/java.lang.Class.privateGetDeclaredMethods(Class.java:3601)
+	at java.base/java.lang.Class.getDeclaredMethods(Class.java:2686)
+	at org.springframework.util.ReflectionUtils.getDeclaredMethods(ReflectionUtils.java:467)
+	... 21 common frames omitted
+Caused by: java.lang.ClassNotFoundException: org.springframework.beans.factory.aot.BeanRegistrationAotProcessor
+	at java.base/jdk.internal.loader.BuiltinClassLoader.loadClass(BuiltinClassLoader.java:641)
+	at java.base/jdk.internal.loader.ClassLoaders$AppClassLoader.loadClass(ClassLoaders.java:188)
+	at java.base/java.lang.ClassLoader.loadClass(ClassLoader.java:525)
+	... 34 common frames omitted
+2025-09-04 18:48:46 [main] INFO  [c.s.t.TrackingServiceApplication] - Starting TrackingServiceApplication using Java 22.0.1 on DESKTOP-5GJ276L with PID 29804 (C:\Users\Dell\Desktop\Middleware\services\tracking-service\target\classes started by Dell in C:\Users\Dell\Desktop\Middleware)
+2025-09-04 18:48:46 [main] DEBUG [c.s.t.TrackingServiceApplication] - Running with Spring Boot v2.7.14, Spring v5.3.29
+2025-09-04 18:48:46 [main] INFO  [c.s.t.TrackingServiceApplication] - No active profile set, falling back to 1 default profile: "default"
+2025-09-04 18:48:46 [main] WARN  [o.s.b.c.config.ConfigDataEnvironment] - Property 'spring.profiles' imported from location 'class path resource [application.yml]' is invalid and should be replaced with 'spring.config.activate.on-profile' [origin: class path resource [application.yml] - 154:13]
+2025-09-04 18:48:46 [main] WARN  [o.s.b.c.config.ConfigDataEnvironment] - Property 'spring.profiles' imported from location 'class path resource [application.yml]' is invalid and should be replaced with 'spring.config.activate.on-profile' [origin: class path resource [application.yml] - 131:13]
+2025-09-04 18:48:48 [main] INFO  [o.s.d.r.c.RepositoryConfigurationDelegate] - Multiple Spring Data modules found, entering strict repository configuration mode
+2025-09-04 18:48:48 [main] INFO  [o.s.d.r.c.RepositoryConfigurationDelegate] - Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2025-09-04 18:48:49 [main] INFO  [o.s.d.r.c.RepositoryConfigurationDelegate] - Finished Spring Data repository scanning in 311 ms. Found 2 JPA repository interfaces.
+2025-09-04 18:48:49 [main] INFO  [o.s.d.r.c.RepositoryConfigurationDelegate] - Multiple Spring Data modules found, entering strict repository configuration mode
+2025-09-04 18:48:49 [main] INFO  [o.s.d.r.c.RepositoryConfigurationDelegate] - Bootstrapping Spring Data Redis repositories in DEFAULT mode.
+2025-09-04 18:48:49 [main] INFO  [o.s.d.r.c.RepositoryConfigurationExtensionSupport] - Spring Data Redis - Could not safely identify store assignment for repository candidate interface com.swiftlogistics.tracking.repository.DeliveryTrackingRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository
+2025-09-04 18:48:49 [main] INFO  [o.s.d.r.c.RepositoryConfigurationExtensionSupport] - Spring Data Redis - Could not safely identify store assignment for repository candidate interface com.swiftlogistics.tracking.repository.TrackingEventRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository
+2025-09-04 18:48:49 [main] INFO  [o.s.d.r.c.RepositoryConfigurationDelegate] - Finished Spring Data repository scanning in 20 ms. Found 0 Redis repository interfaces.
+2025-09-04 18:48:49 [main] ERROR [o.s.boot.SpringApplication] - Application run failed
+java.lang.IllegalStateException: Error processing condition on org.springframework.cloud.loadbalancer.config.LoadBalancerAutoConfiguration.loadBalancerClientFactory
+	at org.springframework.boot.autoconfigure.condition.SpringBootCondition.matches(SpringBootCondition.java:60)
+	at org.springframework.context.annotation.ConditionEvaluator.shouldSkip(ConditionEvaluator.java:108)
+	at org.springframework.context.annotation.ConfigurationClassBeanDefinitionReader.loadBeanDefinitionsForBeanMethod(ConfigurationClassBeanDefinitionReader.java:193)
+	at org.springframework.context.annotation.ConfigurationClassBeanDefinitionReader.loadBeanDefinitionsForConfigurationClass(ConfigurationClassBeanDefinitionReader.java:153)
+	at org.springframework.context.annotation.ConfigurationClassBeanDefinitionReader.loadBeanDefinitions(ConfigurationClassBeanDefinitionReader.java:129)
+	at org.springframework.context.annotation.ConfigurationClassPostProcessor.processConfigBeanDefinitions(ConfigurationClassPostProcessor.java:343)
+	at org.springframework.context.annotation.ConfigurationClassPostProcessor.postProcessBeanDefinitionRegistry(ConfigurationClassPostProcessor.java:247)
+	at org.springframework.context.support.PostProcessorRegistrationDelegate.invokeBeanDefinitionRegistryPostProcessors(PostProcessorRegistrationDelegate.java:311)
+	at org.springframework.context.support.PostProcessorRegistrationDelegate.invokeBeanFactoryPostProcessors(PostProcessorRegistrationDelegate.java:112)
+	at org.springframework.context.support.AbstractApplicationContext.invokeBeanFactoryPostProcessors(AbstractApplicationContext.java:748)
+	at org.springframework.context.support.AbstractApplicationContext.refresh(AbstractApplicationContext.java:564)
+	at org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext.refresh(ServletWebServerApplicationContext.java:147)
+	at org.springframework.boot.SpringApplication.refresh(SpringApplication.java:731)
+	at org.springframework.boot.SpringApplication.refreshContext(SpringApplication.java:408)
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:307)
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:1303)
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:1292)
+	at com.swiftlogistics.tracking.TrackingServiceApplication.main(TrackingServiceApplication.java:15)
+Caused by: java.lang.IllegalStateException: Failed to introspect Class [org.springframework.cloud.loadbalancer.config.LoadBalancerAutoConfiguration] from ClassLoader [jdk.internal.loader.ClassLoaders$AppClassLoader@76ed5528]
+	at org.springframework.util.ReflectionUtils.getDeclaredMethods(ReflectionUtils.java:485)
+	at org.springframework.util.ReflectionUtils.doWithMethods(ReflectionUtils.java:361)
+	at org.springframework.util.ReflectionUtils.getUniqueDeclaredMethods(ReflectionUtils.java:418)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.lambda$getTypeForFactoryMethod$2(AbstractAutowireCapableBeanFactory.java:765)
+	at java.base/java.util.concurrent.ConcurrentHashMap.computeIfAbsent(ConcurrentHashMap.java:1742)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.getTypeForFactoryMethod(AbstractAutowireCapableBeanFactory.java:764)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.determineTargetType(AbstractAutowireCapableBeanFactory.java:703)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.predictBeanType(AbstractAutowireCapableBeanFactory.java:674)
+	at org.springframework.beans.factory.support.AbstractBeanFactory.isFactoryBean(AbstractBeanFactory.java:1684)
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.doGetBeanNamesForType(DefaultListableBeanFactory.java:570)
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.getBeanNamesForType(DefaultListableBeanFactory.java:542)
+	at org.springframework.boot.autoconfigure.condition.OnBeanCondition.collectBeanNamesForType(OnBeanCondition.java:246)
+	at org.springframework.boot.autoconfigure.condition.OnBeanCondition.getBeanNamesForType(OnBeanCondition.java:239)
+	at org.springframework.boot.autoconfigure.condition.OnBeanCondition.getBeanNamesForType(OnBeanCondition.java:229)
+	at org.springframework.boot.autoconfigure.condition.OnBeanCondition.getMatchingBeans(OnBeanCondition.java:182)
+	at org.springframework.boot.autoconfigure.condition.OnBeanCondition.getMatchOutcome(OnBeanCondition.java:157)
+	at org.springframework.boot.autoconfigure.condition.SpringBootCondition.matches(SpringBootCondition.java:47)
+	... 17 common frames omitted
+Caused by: java.lang.NoClassDefFoundError: org/springframework/beans/factory/aot/BeanRegistrationAotProcessor
+	at java.base/java.lang.ClassLoader.defineClass1(Native Method)
+	at java.base/java.lang.ClassLoader.defineClass(ClassLoader.java:1023)
+	at java.base/java.security.SecureClassLoader.defineClass(SecureClassLoader.java:150)
+	at java.base/jdk.internal.loader.BuiltinClassLoader.defineClass(BuiltinClassLoader.java:862)
+	at java.base/jdk.internal.loader.BuiltinClassLoader.findClassOnClassPathOrNull(BuiltinClassLoader.java:760)
+	at java.base/jdk.internal.loader.BuiltinClassLoader.loadClassOrNull(BuiltinClassLoader.java:681)
+	at java.base/jdk.internal.loader.BuiltinClassLoader.loadClass(BuiltinClassLoader.java:639)
+	at java.base/jdk.internal.loader.ClassLoaders$AppClassLoader.loadClass(ClassLoaders.java:188)
+	at java.base/java.lang.ClassLoader.loadClass(ClassLoader.java:525)
+	at java.base/java.lang.Class.getDeclaredMethods0(Native Method)
+	at java.base/java.lang.Class.privateGetDeclaredMethods(Class.java:3601)
+	at java.base/java.lang.Class.getDeclaredMethods(Class.java:2686)
+	at org.springframework.util.ReflectionUtils.getDeclaredMethods(ReflectionUtils.java:467)
+	... 33 common frames omitted
+Caused by: java.lang.ClassNotFoundException: org.springframework.beans.factory.aot.BeanRegistrationAotProcessor
+	at java.base/jdk.internal.loader.BuiltinClassLoader.loadClass(BuiltinClassLoader.java:641)
+	at java.base/jdk.internal.loader.ClassLoaders$AppClassLoader.loadClass(ClassLoaders.java:188)
+	at java.base/java.lang.ClassLoader.loadClass(ClassLoader.java:525)
+	... 46 common frames omitted
+2025-09-04 18:48:49 [main] WARN  [o.s.boot.SpringApplication] - Unable to close ApplicationContext
+java.lang.IllegalStateException: Failed to introspect Class [org.springframework.cloud.loadbalancer.config.LoadBalancerAutoConfiguration] from ClassLoader [jdk.internal.loader.ClassLoaders$AppClassLoader@76ed5528]
+	at org.springframework.util.ReflectionUtils.getDeclaredMethods(ReflectionUtils.java:485)
+	at org.springframework.util.ReflectionUtils.doWithMethods(ReflectionUtils.java:361)
+	at org.springframework.util.ReflectionUtils.getUniqueDeclaredMethods(ReflectionUtils.java:418)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.lambda$getTypeForFactoryMethod$2(AbstractAutowireCapableBeanFactory.java:765)
+	at java.base/java.util.concurrent.ConcurrentHashMap.computeIfAbsent(ConcurrentHashMap.java:1742)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.getTypeForFactoryMethod(AbstractAutowireCapableBeanFactory.java:764)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.determineTargetType(AbstractAutowireCapableBeanFactory.java:703)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.predictBeanType(AbstractAutowireCapableBeanFactory.java:674)
+	at org.springframework.beans.factory.support.AbstractBeanFactory.isFactoryBean(AbstractBeanFactory.java:1684)
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.doGetBeanNamesForType(DefaultListableBeanFactory.java:570)
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.getBeanNamesForType(DefaultListableBeanFactory.java:542)
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.getBeansOfType(DefaultListableBeanFactory.java:669)
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.getBeansOfType(DefaultListableBeanFactory.java:661)
+	at org.springframework.context.support.AbstractApplicationContext.getBeansOfType(AbstractApplicationContext.java:1303)
+	at org.springframework.boot.SpringApplication.getExitCodeFromMappedException(SpringApplication.java:864)
+	at org.springframework.boot.SpringApplication.getExitCodeFromException(SpringApplication.java:852)
+	at org.springframework.boot.SpringApplication.handleExitCode(SpringApplication.java:839)
+	at org.springframework.boot.SpringApplication.handleRunFailure(SpringApplication.java:779)
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:317)
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:1303)
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:1292)
+	at com.swiftlogistics.tracking.TrackingServiceApplication.main(TrackingServiceApplication.java:15)
+Caused by: java.lang.NoClassDefFoundError: org/springframework/beans/factory/aot/BeanRegistrationAotProcessor
+	at java.base/java.lang.ClassLoader.defineClass1(Native Method)
+	at java.base/java.lang.ClassLoader.defineClass(ClassLoader.java:1023)
+	at java.base/java.security.SecureClassLoader.defineClass(SecureClassLoader.java:150)
+	at java.base/jdk.internal.loader.BuiltinClassLoader.defineClass(BuiltinClassLoader.java:862)
+	at java.base/jdk.internal.loader.BuiltinClassLoader.findClassOnClassPathOrNull(BuiltinClassLoader.java:760)
+	at java.base/jdk.internal.loader.BuiltinClassLoader.loadClassOrNull(BuiltinClassLoader.java:681)
+	at java.base/jdk.internal.loader.BuiltinClassLoader.loadClass(BuiltinClassLoader.java:639)
+	at java.base/jdk.internal.loader.ClassLoaders$AppClassLoader.loadClass(ClassLoaders.java:188)
+	at java.base/java.lang.ClassLoader.loadClass(ClassLoader.java:525)
+	at java.base/java.lang.Class.getDeclaredMethods0(Native Method)
+	at java.base/java.lang.Class.privateGetDeclaredMethods(Class.java:3601)
+	at java.base/java.lang.Class.getDeclaredMethods(Class.java:2686)
+	at org.springframework.util.ReflectionUtils.getDeclaredMethods(ReflectionUtils.java:467)
+	... 21 common frames omitted
+Caused by: java.lang.ClassNotFoundException: org.springframework.beans.factory.aot.BeanRegistrationAotProcessor
+	at java.base/jdk.internal.loader.BuiltinClassLoader.loadClass(BuiltinClassLoader.java:641)
+	at java.base/jdk.internal.loader.ClassLoaders$AppClassLoader.loadClass(ClassLoaders.java:188)
+	at java.base/java.lang.ClassLoader.loadClass(ClassLoader.java:525)
+	... 34 common frames omitted

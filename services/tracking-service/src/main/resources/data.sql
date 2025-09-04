@@ -6,69 +6,52 @@ INSERT INTO delivery_tracking (order_number, client_id, current_status, assigned
                                                                                                                                                                                                                   ('ORD-ACT-002', 'CLIENT-002', 'ASSIGNED', 'DRV-001', DATEADD('HOUR', 4, CURRENT_TIMESTAMP), NULL, NULL, NULL, DATEADD('HOUR', -1, CURRENT_TIMESTAMP), DATEADD('HOUR', -1, CURRENT_TIMESTAMP)),
                                                                                                                                                                                                                   ('ORD-ACT-003', 'CLIENT-003', 'PICKED_UP', 'DRV-002', DATEADD('HOUR', 3, CURRENT_TIMESTAMP), 7.2906, 80.6337, DATEADD('MINUTE', -5, CURRENT_TIMESTAMP), DATEADD('HOUR', -3, CURRENT_TIMESTAMP), DATEADD('MINUTE', -5, CURRENT_TIMESTAMP)),
                                                                                                                                                                                                                   ('ORD-ACT-004', 'CLIENT-004', 'AT_PICKUP', 'DRV-007', DATEADD('HOUR', 1, CURRENT_TIMESTAMP), 6.8649, 79.8997, DATEADD('MINUTE', -2, CURRENT_TIMESTAMP), DATEADD('MINUTE', -45, CURRENT_TIMESTAMP), DATEADD('MINUTE', -2, CURRENT_TIMESTAMP)),
-                                                                                                                                                                                                                  ('ORD-COMP-001', 'CLIENT-001', 'DELIVERED', 'DRV-001', NULL, 6.9271, 79.8612, DATEADD('HOUR', -18, CURRENT_TIMESTAMP), DATEADD('DAY', -1, CURRENT_TIMESTAMP), DATEADD('HOUR', -18, CURRENT_TIMESTAMP)),
-                                                                                                                                                                                                                  ('ORD-COMP-002', 'CLIENT-002', 'DELIVERED', 'DRV-002', NULL, 6.8467, 79.9220, DATEADD('HOUR', -12, CURRENT_TIMESTAMP), DATEADD('DAY', -1, CURRENT_TIMESTAMP), DATEADD('HOUR', -12, CURRENT_TIMESTAMP)),
-                                                                                                                                                                                                                  ('ORD-FAIL-001', 'CLIENT-003', 'FAILED', 'DRV-003', NULL, 7.2906, 80.6337, DATEADD('DAY', -3, CURRENT_TIMESTAMP), DATEADD('DAY', -3, CURRENT_TIMESTAMP), DATEADD('DAY', -3, CURRENT_TIMESTAMP));
+                                                                                                                                                                                                                  ('ORD-COMP-001', 'CLIENT-001', 'DELIVERED', 'DRV-001', NULL, 6.9271, 79.8612, DATEADD('HOUR', -6, CURRENT_TIMESTAMP), DATEADD('HOUR', -8, CURRENT_TIMESTAMP), DATEADD('HOUR', -6, CURRENT_TIMESTAMP)),
+                                                                                                                                                                                                                  ('ORD-COMP-002', 'CLIENT-002', 'DELIVERED', 'DRV-002', NULL, 6.8467, 79.9220, DATEADD('HOUR', -12, CURRENT_TIMESTAMP), DATEADD('HOUR', -14, CURRENT_TIMESTAMP), DATEADD('HOUR', -12, CURRENT_TIMESTAMP)),
+                                                                                                                                                                                                                  ('ORD-FAIL-001', 'CLIENT-003', 'DELIVERY_FAILED', 'DRV-003', DATEADD('DAY', 1, CURRENT_TIMESTAMP), 7.2906, 80.6337, DATEADD('DAY', -3, CURRENT_TIMESTAMP), DATEADD('DAY', -3, CURRENT_TIMESTAMP), DATEADD('DAY', -3, CURRENT_TIMESTAMP));
 
--- Insert sample tracking events using correct enum values
+-- Insert detailed tracking events
 INSERT INTO tracking_events (order_number, event_type, event_description, driver_id, latitude, longitude, timestamp, metadata) VALUES
--- Events for ORD-ACT-001 (En Route to Delivery)
+-- Events for ORD-ACT-001
 ('ORD-ACT-001', 'ORDER_CREATED', 'Order created and submitted to system', NULL, NULL, NULL, DATEADD('HOUR', -2, CURRENT_TIMESTAMP), '{"source":"order-service","clientId":"CLIENT-001"}'),
 ('ORD-ACT-001', 'ORDER_CONFIRMED', 'Order has been confirmed and is being processed', NULL, NULL, NULL, DATEADD('MINUTE', -110, CURRENT_TIMESTAMP), '{"confirmedBy":"system","warehouse":"WH-001"}'),
 ('ORD-ACT-001', 'DRIVER_ASSIGNED', 'Driver has been assigned to the order', 'DRV-001', NULL, NULL, DATEADD('MINUTE', -90, CURRENT_TIMESTAMP), '{"driverId":"DRV-001","assignedBy":"system"}'),
 ('ORD-ACT-001', 'ORDER_PICKED_UP', 'Order has been picked up from warehouse', 'DRV-001', 6.9319, 79.8478, DATEADD('MINUTE', -60, CURRENT_TIMESTAMP), '{"warehouseId":"WH-001","packages":1}'),
 ('ORD-ACT-001', 'ORDER_IN_TRANSIT', 'Order is in transit to destination', 'DRV-001', 6.9271, 79.8612, DATEADD('MINUTE', -30, CURRENT_TIMESTAMP), '{"route":"optimized","eta":"2 hours"}'),
-('ORD-ACT-001', 'LOCATION_UPDATE', 'Driver location has been updated', 'DRV-001', 6.9271, 79.8612, DATEADD('MINUTE', -10, CURRENT_TIMESTAMP), '{"speed":25.5,"heading":45.0}');
+('ORD-ACT-001', 'LOCATION_UPDATE', 'Driver location has been updated', 'DRV-001', 6.9271, 79.8612, DATEADD('MINUTE', -10, CURRENT_TIMESTAMP), '{"speed":25.5,"heading":45.0}'),
 
--- Events for ORD-ACT-002 (Assigned)
-INSERT INTO tracking_events (order_number, event_type, event_description, driver_id, latitude, longitude, timestamp, metadata) VALUES
-                                                                                                                                   ('ORD-ACT-002', 'ORDER_CREATED', 'Order created and submitted to system', NULL, NULL, NULL, DATEADD('HOUR', -1, CURRENT_TIMESTAMP), '{"source":"order-service","clientId":"CLIENT-002"}'),
-                                                                                                                                   ('ORD-ACT-002', 'ORDER_CONFIRMED', 'Order has been confirmed and is being processed', NULL, NULL, NULL, DATEADD('MINUTE', -50, CURRENT_TIMESTAMP), '{"confirmedBy":"system","warehouse":"WH-001"}'),
-                                                                                                                                   ('ORD-ACT-002', 'DRIVER_ASSIGNED', 'Driver has been assigned to the order', 'DRV-001', NULL, NULL, DATEADD('MINUTE', -30, CURRENT_TIMESTAMP), '{"driverId":"DRV-001","assignedBy":"system"}');
+-- Events for ORD-ACT-002
+('ORD-ACT-002', 'ORDER_CREATED', 'Order created and submitted to system', NULL, NULL, NULL, DATEADD('HOUR', -1, CURRENT_TIMESTAMP), '{"source":"order-service","clientId":"CLIENT-002"}'),
+('ORD-ACT-002', 'ORDER_CONFIRMED', 'Order has been confirmed and is being processed', NULL, NULL, NULL, DATEADD('MINUTE', -50, CURRENT_TIMESTAMP), '{"confirmedBy":"system","warehouse":"WH-001"}'),
+('ORD-ACT-002', 'DRIVER_ASSIGNED', 'Driver has been assigned to the order', 'DRV-001', NULL, NULL, DATEADD('MINUTE', -40, CURRENT_TIMESTAMP), '{"driverId":"DRV-001","assignedBy":"system"}'),
 
--- Events for ORD-ACT-003 (Picked Up)
-INSERT INTO tracking_events (order_number, event_type, event_description, driver_id, latitude, longitude, timestamp, metadata) VALUES
-                                                                                                                                   ('ORD-ACT-003', 'ORDER_CREATED', 'Order created and submitted to system', NULL, NULL, NULL, DATEADD('HOUR', -3, CURRENT_TIMESTAMP), '{"source":"order-service","clientId":"CLIENT-003"}'),
-                                                                                                                                   ('ORD-ACT-003', 'ORDER_CONFIRMED', 'Order has been confirmed and is being processed', NULL, NULL, NULL, DATEADD('HOUR', -2, CURRENT_TIMESTAMP), '{"confirmedBy":"system","warehouse":"WH-002"}'),
-                                                                                                                                   ('ORD-ACT-003', 'DRIVER_ASSIGNED', 'Driver has been assigned to the order', 'DRV-002', NULL, NULL, DATEADD('HOUR', -2, CURRENT_TIMESTAMP), '{"driverId":"DRV-002","assignedBy":"system"}'),
-                                                                                                                                   ('ORD-ACT-003', 'DRIVER_EN_ROUTE', 'Driver is en route to pickup location', 'DRV-002', 7.2950, 80.6300, DATEADD('MINUTE', -30, CURRENT_TIMESTAMP), '{"destination":"pickup","eta":"30 minutes"}'),
-                                                                                                                                   ('ORD-ACT-003', 'DRIVER_ARRIVED', 'Driver has arrived at the pickup location', 'DRV-002', 7.2906, 80.6337, DATEADD('MINUTE', -10, CURRENT_TIMESTAMP), '{"location":"warehouse","arrivalTime":"10:30 AM"}'),
-                                                                                                                                   ('ORD-ACT-003', 'ORDER_PICKED_UP', 'Order has been picked up from warehouse', 'DRV-002', 7.2906, 80.6337, DATEADD('MINUTE', -5, CURRENT_TIMESTAMP), '{"warehouseId":"WH-002","packages":3}');
+-- Events for ORD-ACT-003
+('ORD-ACT-003', 'ORDER_CREATED', 'Order created and submitted to system', NULL, NULL, NULL, DATEADD('HOUR', -3, CURRENT_TIMESTAMP), '{"source":"order-service","clientId":"CLIENT-003"}'),
+('ORD-ACT-003', 'DRIVER_ASSIGNED', 'Driver has been assigned to the order', 'DRV-002', NULL, NULL, DATEADD('HOUR', -3, CURRENT_TIMESTAMP), '{"driverId":"DRV-002","assignedBy":"system"}'),
+('ORD-ACT-003', 'ORDER_PICKED_UP', 'Order has been picked up from warehouse', 'DRV-002', 7.2906, 80.6337, DATEADD('MINUTE', -5, CURRENT_TIMESTAMP), '{"warehouseId":"WH-002","packages":2}'),
 
--- Events for ORD-ACT-004 (At Pickup)
-INSERT INTO tracking_events (order_number, event_type, event_description, driver_id, latitude, longitude, timestamp, metadata) VALUES
-                                                                                                                                   ('ORD-ACT-004', 'ORDER_CREATED', 'Order created and submitted to system', NULL, NULL, NULL, DATEADD('MINUTE', -45, CURRENT_TIMESTAMP), '{"source":"order-service","clientId":"CLIENT-004"}'),
-                                                                                                                                   ('ORD-ACT-004', 'ORDER_CONFIRMED', 'Order has been confirmed and is being processed', NULL, NULL, NULL, DATEADD('MINUTE', -30, CURRENT_TIMESTAMP), '{"confirmedBy":"system","warehouse":"WH-003"}'),
-                                                                                                                                   ('ORD-ACT-004', 'DRIVER_ASSIGNED', 'Driver has been assigned to the order', 'DRV-007', NULL, NULL, DATEADD('MINUTE', -20, CURRENT_TIMESTAMP), '{"driverId":"DRV-007","assignedBy":"system"}'),
-                                                                                                                                   ('ORD-ACT-004', 'DRIVER_EN_ROUTE', 'Driver is en route to pickup location', 'DRV-007', 6.8600, 79.8900, DATEADD('MINUTE', -10, CURRENT_TIMESTAMP), '{"destination":"pickup","eta":"10 minutes"}'),
-                                                                                                                                   ('ORD-ACT-004', 'DRIVER_ARRIVED', 'Driver has arrived at the pickup location', 'DRV-007', 6.8649, 79.8997, DATEADD('MINUTE', -2, CURRENT_TIMESTAMP), '{"location":"warehouse","arrivalTime":"11:45 AM"}');
+-- Events for ORD-ACT-004
+('ORD-ACT-004', 'ORDER_CREATED', 'Order created and submitted to system', NULL, NULL, NULL, DATEADD('MINUTE', -45, CURRENT_TIMESTAMP), '{"source":"order-service","clientId":"CLIENT-004"}'),
+('ORD-ACT-004', 'DRIVER_ASSIGNED', 'Driver has been assigned to the order', 'DRV-007', NULL, NULL, DATEADD('MINUTE', -30, CURRENT_TIMESTAMP), '{"driverId":"DRV-007","assignedBy":"system"}'),
+('ORD-ACT-004', 'AT_PICKUP_LOCATION', 'Driver has arrived at pickup location', 'DRV-007', 6.8649, 79.8997, DATEADD('MINUTE', -2, CURRENT_TIMESTAMP), '{"warehouseId":"WH-003","status":"loading"}'),
 
--- Events for completed deliveries
-INSERT INTO tracking_events (order_number, event_type, event_description, driver_id, latitude, longitude, timestamp, metadata) VALUES
-                                                                                                                                   ('ORD-COMP-001', 'ORDER_CREATED', 'Order created and submitted to system', NULL, NULL, NULL, DATEADD('DAY', -1, CURRENT_TIMESTAMP), '{"source":"order-service","clientId":"CLIENT-001"}'),
-                                                                                                                                   ('ORD-COMP-001', 'ORDER_CONFIRMED', 'Order has been confirmed and is being processed', NULL, NULL, NULL, DATEADD('HOUR', -23, CURRENT_TIMESTAMP), '{"confirmedBy":"system","warehouse":"WH-001"}'),
-                                                                                                                                   ('ORD-COMP-001', 'DRIVER_ASSIGNED', 'Driver has been assigned to the order', 'DRV-001', NULL, NULL, DATEADD('HOUR', -22, CURRENT_TIMESTAMP), '{"driverId":"DRV-001","assignedBy":"system"}'),
-                                                                                                                                   ('ORD-COMP-001', 'ORDER_PICKED_UP', 'Order has been picked up from warehouse', 'DRV-001', 6.9319, 79.8478, DATEADD('HOUR', -20, CURRENT_TIMESTAMP), '{"warehouseId":"WH-001","packages":1}'),
-                                                                                                                                   ('ORD-COMP-001', 'ORDER_IN_TRANSIT', 'Order is in transit to destination', 'DRV-001', 6.9280, 79.8550, DATEADD('HOUR', -19, CURRENT_TIMESTAMP), '{"route":"optimized","eta":"1 hour"}'),
-                                                                                                                                   ('ORD-COMP-001', 'ORDER_OUT_FOR_DELIVERY', 'Order is out for delivery', 'DRV-001', 6.9250, 79.8600, DATEADD('HOUR', -18, CURRENT_TIMESTAMP), '{"eta":"30 minutes","customerNotified":true}'),
-                                                                                                                                   ('ORD-COMP-001', 'ORDER_DELIVERED', 'Order has been successfully delivered', 'DRV-001', 6.9271, 79.8612, DATEADD('HOUR', -18, CURRENT_TIMESTAMP), '{"deliveredTo":"John Silva","signature":"captured","photo":"proof.jpg"}'),
-                                                                                                                                   ('ORD-COMP-001', 'NOTIFICATION_SENT', 'Delivery confirmation notification sent to customer', 'DRV-001', 6.9271, 79.8612, DATEADD('HOUR', -18, CURRENT_TIMESTAMP), '{"notificationType":"delivery_confirmation","method":"SMS"}');
+-- Events for completed orders
+('ORD-COMP-001', 'ORDER_CREATED', 'Order created and submitted to system', NULL, NULL, NULL, DATEADD('HOUR', -8, CURRENT_TIMESTAMP), '{"source":"order-service","clientId":"CLIENT-001"}'),
+('ORD-COMP-001', 'DRIVER_ASSIGNED', 'Driver assigned to order', 'DRV-001', NULL, NULL, DATEADD('HOUR', -8, CURRENT_TIMESTAMP), '{"driverId":"DRV-001","assignedBy":"system"}'),
+('ORD-COMP-001', 'PICKUP_COMPLETED', 'Package picked up from warehouse', 'DRV-001', 6.9271, 79.8612, DATEADD('HOUR', -7, CURRENT_TIMESTAMP), '{"warehouseId":"WH-001","packages":1}'),
+('ORD-COMP-001', 'DELIVERY_COMPLETED', 'Package successfully delivered', 'DRV-001', 6.9271, 79.8612, DATEADD('HOUR', -6, CURRENT_TIMESTAMP), '{"deliveredTo":"John Perera","signature":"captured","photo":"proof1.jpg","deliveryTime":"1 hour","customerNotified":true}'),
 
-INSERT INTO tracking_events (order_number, event_type, event_description, driver_id, latitude, longitude, timestamp, metadata) VALUES
-                                                                                                                                   ('ORD-COMP-002', 'ORDER_CREATED', 'Order created and submitted to system', NULL, NULL, NULL, DATEADD('DAY', -1, CURRENT_TIMESTAMP), '{"source":"order-service","clientId":"CLIENT-002"}'),
-                                                                                                                                   ('ORD-COMP-002', 'ORDER_CONFIRMED', 'Order has been confirmed and is being processed', NULL, NULL, NULL, DATEADD('HOUR', -17, CURRENT_TIMESTAMP), '{"confirmedBy":"system","warehouse":"WH-001"}'),
-                                                                                                                                   ('ORD-COMP-002', 'DRIVER_ASSIGNED', 'Driver has been assigned to the order', 'DRV-002', NULL, NULL, DATEADD('HOUR', -16, CURRENT_TIMESTAMP), '{"driverId":"DRV-002","assignedBy":"system"}'),
-                                                                                                                                   ('ORD-COMP-002', 'ORDER_PICKED_UP', 'Order has been picked up from warehouse', 'DRV-002', 6.8467, 79.9220, DATEADD('HOUR', -14, CURRENT_TIMESTAMP), '{"warehouseId":"WH-001","packages":1}'),
-                                                                                                                                   ('ORD-COMP-002', 'ORDER_OUT_FOR_DELIVERY', 'Order is out for delivery', 'DRV-002', 6.8467, 79.9220, DATEADD('HOUR', -13, CURRENT_TIMESTAMP), '{"eta":"1 hour","customerNotified":true}'),
-                                                                                                                                   ('ORD-COMP-002', 'ORDER_DELIVERED', 'Order has been successfully delivered', 'DRV-002', 6.8467, 79.9220, DATEADD('HOUR', -12, CURRENT_TIMESTAMP), '{"deliveredTo":"Sarah Fernando","signature":"captured","photo":"proof2.jpg"}');
+('ORD-COMP-002', 'ORDER_CREATED', 'Order created and submitted to system', NULL, NULL, NULL, DATEADD('HOUR', -14, CURRENT_TIMESTAMP), '{"source":"order-service","clientId":"CLIENT-002"}'),
+('ORD-COMP-002', 'DRIVER_ASSIGNED', 'Driver assigned to order', 'DRV-002', NULL, NULL, DATEADD('HOUR', -14, CURRENT_TIMESTAMP), '{"driverId":"DRV-002","assignedBy":"system"}'),
+('ORD-COMP-002', 'PICKUP_COMPLETED', 'Package picked up from warehouse', 'DRV-002', 6.8467, 79.9220, DATEADD('HOUR', -14, CURRENT_TIMESTAMP), '{"warehouseId":"WH-001","packages":1}'),
+('ORD-COMP-002', 'DELIVERY_COMPLETED', 'Package successfully delivered', 'DRV-002', 6.8467, 79.9220, DATEADD('HOUR', -12, CURRENT_TIMESTAMP), '{"deliveredTo":"Sarah Fernando","signature":"captured","photo":"proof2.jpg"}'),
 
 -- Events for failed delivery
-INSERT INTO tracking_events (order_number, event_type, event_description, driver_id, latitude, longitude, timestamp, metadata) VALUES
-                                                                                                                                   ('ORD-FAIL-001', 'ORDER_CREATED', 'Order created and submitted to system', NULL, NULL, NULL, DATEADD('DAY', -3, CURRENT_TIMESTAMP), '{"source":"order-service","clientId":"CLIENT-003"}'),
-                                                                                                                                   ('ORD-FAIL-001', 'ORDER_CONFIRMED', 'Order has been confirmed and is being processed', NULL, NULL, NULL, DATEADD('DAY', -3, CURRENT_TIMESTAMP), '{"confirmedBy":"system","warehouse":"WH-002"}'),
-                                                                                                                                   ('ORD-FAIL-001', 'DRIVER_ASSIGNED', 'Driver has been assigned to the order', 'DRV-003', NULL, NULL, DATEADD('DAY', -3, CURRENT_TIMESTAMP), '{"driverId":"DRV-003","assignedBy":"system"}'),
-                                                                                                                                   ('ORD-FAIL-001', 'ORDER_PICKED_UP', 'Order has been picked up from warehouse', 'DRV-003', 7.2906, 80.6337, DATEADD('DAY', -3, CURRENT_TIMESTAMP), '{"warehouseId":"WH-002","packages":3}'),
-                                                                                                                                   ('ORD-FAIL-001', 'ORDER_FAILED', 'Delivery attempt failed - recipient not available', 'DRV-003', 7.2906, 80.6337, DATEADD('DAY', -3, CURRENT_TIMESTAMP), '{"failureReason":"Recipient not available","attemptNumber":1,"rescheduled":true}');
+('ORD-FAIL-001', 'ORDER_CREATED', 'Order created and submitted to system', NULL, NULL, NULL, DATEADD('DAY', -3, CURRENT_TIMESTAMP), '{"source":"order-service","clientId":"CLIENT-003"}'),
+('ORD-FAIL-001', 'ORDER_CONFIRMED', 'Order has been confirmed and is being processed', NULL, NULL, NULL, DATEADD('DAY', -3, CURRENT_TIMESTAMP), '{"confirmedBy":"system","warehouse":"WH-002"}'),
+('ORD-FAIL-001', 'DRIVER_ASSIGNED', 'Driver has been assigned to the order', 'DRV-003', NULL, NULL, DATEADD('DAY', -3, CURRENT_TIMESTAMP), '{"driverId":"DRV-003","assignedBy":"system"}'),
+('ORD-FAIL-001', 'ORDER_PICKED_UP', 'Order has been picked up from warehouse', 'DRV-003', 7.2906, 80.6337, DATEADD('DAY', -3, CURRENT_TIMESTAMP), '{"warehouseId":"WH-002","packages":3}'),
+('ORD-FAIL-001', 'DELIVERY_FAILED', 'Delivery attempt failed - recipient not available', 'DRV-003', 7.2906, 80.6337, DATEADD('DAY', -3, CURRENT_TIMESTAMP), '{"failureReason":"Recipient not available","attemptNumber":1,"rescheduled":true}');
 
 -- Insert sample driver locations (current positions)
 INSERT INTO driver_locations (driver_id, latitude, longitude, timestamp, speed, heading, accuracy) VALUES
@@ -77,14 +60,17 @@ INSERT INTO driver_locations (driver_id, latitude, longitude, timestamp, speed, 
                                                                                                        ('DRV-003', 6.9319, 79.8478, DATEADD('MINUTE', -5, CURRENT_TIMESTAMP), 0.0, 0.0, 3.0),
                                                                                                        ('DRV-007', 6.8649, 79.8997, DATEADD('MINUTE', -1, CURRENT_TIMESTAMP), 15.8, 180.0, 4.0);
 
--- Insert sample delivery locations (waypoints)
+-- Insert sample delivery locations (waypoints) - FIXED: No more NULL timestamps
 INSERT INTO delivery_locations (delivery_id, latitude, longitude, timestamp, address, location_type) VALUES
-                                                                                                         ('ORD-ACT-001', 6.9319, 79.8478, DATEADD('HOUR', -1, CURRENT_TIMESTAMP), 'TechMart Warehouse, Kelaniya', 'PICKUP'),
-                                                                                                         ('ORD-ACT-001', 6.9271, 79.8612, DATEADD('MINUTE', -10, CURRENT_TIMESTAMP), 'En route to delivery', 'WAYPOINT'),
-                                                                                                         ('ORD-ACT-001', 6.9233, 79.8725, NULL, '123 Lake Road, Nugegoda', 'DELIVERY'),
+-- ORD-ACT-001 waypoints
+('ORD-ACT-001', 6.9319, 79.8478, DATEADD('HOUR', -1, CURRENT_TIMESTAMP), 'TechMart Warehouse, Kelaniya', 'PICKUP'),
+('ORD-ACT-001', 6.9271, 79.8612, DATEADD('MINUTE', -10, CURRENT_TIMESTAMP), 'En route to delivery', 'WAYPOINT'),
+('ORD-ACT-001', 6.9233, 79.8725, DATEADD('HOUR', 2, CURRENT_TIMESTAMP), '123 Lake Road, Nugegoda', 'DELIVERY'),  -- Future delivery time
 
-                                                                                                         ('ORD-ACT-003', 7.2906, 80.6337, DATEADD('MINUTE', -5, CURRENT_TIMESTAMP), 'Book Paradise, Kandy', 'PICKUP'),
-                                                                                                         ('ORD-ACT-003', 7.2568, 80.5923, NULL, '789 School Lane, Matale', 'DELIVERY'),
+-- ORD-ACT-003 waypoints
+('ORD-ACT-003', 7.2906, 80.6337, DATEADD('MINUTE', -5, CURRENT_TIMESTAMP), 'Book Paradise, Kandy', 'PICKUP'),
+('ORD-ACT-003', 7.2568, 80.5923, DATEADD('HOUR', 3, CURRENT_TIMESTAMP), '789 School Lane, Matale', 'DELIVERY'),  -- Future delivery time
 
-                                                                                                         ('ORD-ACT-004', 6.8649, 79.8997, DATEADD('MINUTE', -2, CURRENT_TIMESTAMP), 'Green Groceries Warehouse, Maharagama', 'PICKUP'),
-                                                                                                         ('ORD-ACT-004', 6.8147, 79.9969, NULL, '321 New Road, Panadura', 'DELIVERY');
+-- ORD-ACT-004 waypoints
+('ORD-ACT-004', 6.8649, 79.8997, DATEADD('MINUTE', -2, CURRENT_TIMESTAMP), 'Green Groceries Warehouse, Maharagama', 'PICKUP'),
+('ORD-ACT-004', 6.8147, 79.9969, DATEADD('HOUR', 1, CURRENT_TIMESTAMP), '321 New Road, Panadura', 'DELIVERY');  -- Future delivery time

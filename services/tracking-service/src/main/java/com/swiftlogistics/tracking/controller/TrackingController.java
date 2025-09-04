@@ -503,4 +503,63 @@ public class TrackingController {
     public ResponseEntity<Void> handleOptions() {
         return ResponseEntity.ok().build();
     }
+
+    @GetMapping("/orders")
+    public ResponseEntity<List<Map<String, Object>>> getAllOrders() {
+        logger.info("All orders requested");
+
+        try {
+            List<DeliveryTracking> deliveries = deliveryTrackingRepository.findAll();
+
+            List<Map<String, Object>> orders = deliveries.stream()
+                    .map(delivery -> {
+                        Map<String, Object> orderInfo = new HashMap<>();
+                        orderInfo.put("orderNumber", delivery.getOrderNumber());
+                        orderInfo.put("currentStatus", delivery.getCurrentStatus());
+                        orderInfo.put("clientId", delivery.getClientId());
+                        orderInfo.put("assignedDriverId", delivery.getAssignedDriverId());
+                        orderInfo.put("lastKnownLatitude", delivery.getLastKnownLatitude());
+                        orderInfo.put("lastKnownLongitude", delivery.getLastKnownLongitude());
+                        orderInfo.put("estimatedDeliveryTime", delivery.getEstimatedDeliveryTime());
+                        orderInfo.put("createdAt", delivery.getCreatedAt());
+                        orderInfo.put("updatedAt", delivery.getUpdatedAt());
+                        return orderInfo;
+                    })
+                    .collect(Collectors.toList());
+
+            return ResponseEntity.ok(orders);
+
+        } catch (Exception e) {
+            logger.error("Error getting all orders: {}", e.getMessage(), e);
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
+    // ADD THIS METHOD - Missing /stats endpoint
+    @GetMapping("/stats")
+    public ResponseEntity<Map<String, Object>> getStats() {
+        logger.info("Statistics requested");
+
+        try {
+            long totalOrders = deliveryTrackingRepository.count();
+            long totalEvents = trackingEventRepository.count();
+
+            Map<String, Object> stats = new HashMap<>();
+            stats.put("totalOrders", totalOrders);
+            stats.put("totalEvents", totalEvents);
+            stats.put("service", "tracking-service");
+            stats.put("status", "operational");
+            stats.put("timestamp", LocalDateTime.now());
+            stats.put("realTimeConnections", sessionManager.getConnectionStats());
+
+            return ResponseEntity.ok(stats);
+
+        } catch (Exception e) {
+            logger.error("Error getting stats: {}", e.getMessage(), e);
+
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("error", "Failed to get statistics");
+            return ResponseEntity.internalServerError().body(errorResponse);
+        }
+    }
 }

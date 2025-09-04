@@ -3,8 +3,11 @@ package com.swiftlogistics.tracking.entity;
 
 import com.swiftlogistics.tracking.enums.TrackingEventType;
 
-import javax.persistence.*;
 import java.time.LocalDateTime;
+//import jakarta.persistence.*;
+
+import javax.persistence.*;
+
 
 @Entity
 @Table(name = "tracking_events")
