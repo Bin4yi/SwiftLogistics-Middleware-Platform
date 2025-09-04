@@ -1,92 +1,82 @@
-# infrastructure/api-gateway/src/main/resources/application.yml
 server:
   port: 8080
 
 spring:
   application:
     name: api-gateway
-
   cloud:
-    config:
-      import-check:
-        enabled: false
     gateway:
       discovery:
         locator:
           enabled: true
-          lowerCaseServiceId: true
+          lower-case-service-id: true
       routes:
-        # Integration Service API Routes - FINAL FIX: NO StripPrefix
-        - id: integration-service-api
-          uri: lb://integration-service
-          predicates:
-            - Path=/api/integration/**
-            # NO FILTERS - Pass the full path /api/integration/** to the service
-
-        # Mock System Routes - These work fine
-        - id: integration-service-mock
-          uri: lb://integration-service
-          predicates:
-            - Path=/mock/**
-            # No StripPrefix - keep full path
-
-        # Order Service Routes - Order service needs /api stripped
+        # Order Service Routes
         - id: order-service
           uri: lb://order-service
           predicates:
             - Path=/api/orders/**
-            # NO FILTERS - Order service controller already has /api/orders mapping
+          filters:
+            - StripPrefix=0
+
+        # Integration Service Routes
+        - id: integration-service
+          uri: lb://integration-service
+          predicates:
+            - Path=/api/integration/**
+          filters:
+            - StripPrefix=0
 
         # Tracking Service Routes
         - id: tracking-service
           uri: lb://tracking-service
           predicates:
             - Path=/api/tracking/**
-            # NO FILTERS - Let service handle the full path
+          filters:
+            - StripPrefix=0
 
         # Driver Service Routes
         - id: driver-service
           uri: lb://driver-service
           predicates:
             - Path=/api/drivers/**
-          # NO FILTERS - Let service handle the full path
+          filters:
+            - StripPrefix=0
 
       # Global CORS Configuration
       globalcors:
         cors-configurations:
           '[/**]':
             allowedOrigins: "*"
-            allowedMethods: "*"
+            allowedMethods:
+              - GET
+              - POST
+              - PUT
+              - DELETE
+              - OPTIONS
             allowedHeaders: "*"
-            allowCredentials: false
+            maxAge: 3600
 
+# Eureka Configuration
 eureka:
   client:
-    serviceUrl:
+    service-url:
       defaultZone: http://localhost:8761/eureka/
+    fetch-registry: true
+    register-with-eureka: true
 
-logging:
-  pattern:
-    console: "%d{HH:mm:ss} [API-Gateway] %-5level %logger{36} - %msg%n"
-  level:
-    org.springframework.cloud.gateway.route: DEBUG
-    org.springframework.cloud.gateway: DEBUG
-    org.springframework.web: DEBUG
-
-# Actuator endpoints for debugging
+# Management endpoints
 management:
   endpoints:
     web:
       exposure:
-        include: health,info,gateway,routes
-  endpoint:
-    gateway:
-      enabled: true
+        include: health,info,routes,gateway
 
 ---
+# Docker profile
 spring:
   profiles: docker
 eureka:
   client:
-    serviceUrl:
+    service-url:
       defaultZone: http://eureka-server:8761/eureka/

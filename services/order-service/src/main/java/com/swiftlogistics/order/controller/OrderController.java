@@ -28,6 +28,19 @@ public class OrderController {
     @Autowired
     private OrderService orderService;
 
+    @GetMapping
+    public ResponseEntity<ApiResponse<List<OrderResponse>>> getAllOrders() {
+        logger.debug("Fetching all orders");
+        try {
+            List<OrderResponse> orders = orderService.getAllOrders();
+            return ResponseEntity.ok(ApiResponse.success(orders));
+        } catch (Exception e) {
+            logger.error("Error fetching all orders: {}", e.getMessage());
+            return ResponseEntity.badRequest()
+                    .body(ApiResponse.error("Failed to fetch orders: " + e.getMessage()));
+        }
+    }
+
     @PostMapping("/submit")
     public ResponseEntity<ApiResponse<OrderResponse>> submitOrder(@Valid @RequestBody OrderRequest request) {
         logger.info("Received order submission request for client: {}", request.getClientId());

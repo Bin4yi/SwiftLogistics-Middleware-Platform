@@ -1,4 +1,6 @@
-// services/tracking-service/src/main/java/com/swiftlogistics/tracking/repository/TrackingEventRepository.java
+// File: services/tracking-service/src/main/java/com/swiftlogistics/tracking/repository/TrackingEventRepository.java
+// CREATE THIS FILE IF IT DOESN'T EXIST OR UPDATE YOUR EXISTING ONE
+
 package com.swiftlogistics.tracking.repository;
 
 import com.swiftlogistics.tracking.entity.TrackingEvent;
@@ -35,4 +37,7 @@ public interface TrackingEventRepository extends JpaRepository<TrackingEvent, Lo
 
     @Query("SELECT COUNT(te) FROM TrackingEvent te WHERE te.orderNumber = :orderNumber")
     long countByOrderNumber(@Param("orderNumber") String orderNumber);
+
+    @Query("SELECT COUNT(te) FROM TrackingEvent te")
+    long count();
 }

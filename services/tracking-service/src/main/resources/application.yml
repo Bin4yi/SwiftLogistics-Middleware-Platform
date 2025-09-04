@@ -1,3 +1,5 @@
+# File: services/tracking-service/src/main/resources/application.yml
+
 server:
   port: 8084
 
@@ -5,60 +7,175 @@ spring:
   application:
     name: tracking-service
 
-  cloud:
-    config:
-      import-check:
-        enabled: false
-
-  # Database configuration - FALLBACK
+  # Database Configuration
   datasource:
-    url: jdbc:h2:mem:trackingdb
-    driver-class-name: org.h2.Driver
+    url: jdbc:h2:mem:trackingdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    driverClassName: org.h2.Driver
     username: sa
     password: password
-  
+
+  # JPA Configuration
+  jpa:
+    database-platform: org.hibernate.dialect.H2Dialect
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: true
+
+  # H2 Console (for development)
   h2:
     console:
       enabled: true
       path: /h2-console
-  
-  jpa:
-    hibernate:
-      ddl-auto: create-drop
-    show-sql: true
-    database-platform: org.hibernate.dialect.H2Dialect
-  
-  # Redis configuration - FALLBACK
+
+  # Redis Configuration
   redis:
     host: localhost
     port: 6379
     timeout: 2000ms
-  
-  # RabbitMQ configuration - FALLBACK
+    jedis:
+      pool:
+        max-active: 8
+        max-wait: -1ms
+        max-idle: 8
+        min-idle: 0
+
+  # RabbitMQ Configuration
   rabbitmq:
     host: localhost
     port: 5672
-    username: swiftlogistics
-    password: logistics123
+    username: guest
+    password: guest
+    virtual-host: /
+    connection-timeout: 15000
+    template:
+      retry:
+        enabled: true
+        initial-interval: 1000
+        max-attempts: 3
+        max-interval: 10000
+        multiplier: 1.0
 
-# Eureka Configuration - FALLBACK
+  # Cloud Config
+  cloud:
+    config:
+      enabled: false  # Disable for standalone testing
+
+  # SQL Initialization
+  sql:
+    init:
+      mode: always
+      schema-locations: classpath:schema.sql
+      data-locations: classpath:data.sql
+
+# Eureka Configuration
 eureka:
   client:
-    enabled: true
-    service-url:
+    serviceUrl:
       defaultZone: http://localhost:8761/eureka/
-    fetch-registry: true
-    register-with-eureka: true
+    registerWithEureka: true
+    fetchRegistry: true
     healthcheck:
       enabled: true
   instance:
-    prefer-ip-address: true
+    preferIpAddress: true
     lease-renewal-interval-in-seconds: 30
     lease-expiration-duration-in-seconds: 90
-    hostname: localhost
-    instance-id: ${spring.application.name}:${server.port}
 
-# Logging
+# Management and Monitoring
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      show-details: always
+  health:
+    redis:
+      enabled: true
+    rabbit:
+      enabled: true
+
+# Logging Configuration
 logging:
+  level:
+    com.swiftlogistics.tracking: DEBUG
+    org.springframework.web.socket: DEBUG
+    org.springframework.amqp: INFO
   pattern:
-    console: "%d{HH:mm:ss} [Tracking-Service-LOCAL] %-5level %logger{36} - %msg%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level [%logger{36}] - %msg%n"
+  file:
+    name: logs/tracking-service.log
+
+# Custom Application Properties
+tracking:
+  websocket:
+    maxConnections: 1000
+    heartbeatInterval: 30000
+    messageTimeout: 5000
+  cache:
+    defaultTtl: 3600  # 1 hour in seconds
+    trackingTtl: 7200  # 2 hours
+    locationTtl: 1800  # 30 minutes
+  notifications:
+    enabled: true
+    retryAttempts: 3
+    retryDelay: 5000
+
+---
+# Docker Profile
+spring:
+  profiles: docker
+
+  datasource:
+    url: jdbc:h2:mem:trackingdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+
+  redis:
+    host: redis
+    port: 6379
+
+  rabbitmq:
+    host: rabbitmq
+    port: 5672
+
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: http://eureka-server:8761/eureka/
+  instance:
+    hostname: tracking-service
+
+---
+# Production Profile
+spring:
+  profiles: production
+
+  datasource:
+    url: jdbc:postgresql://localhost:5432/trackingdb
+    driverClassName: org.postgresql.Driver
+    username: ${DB_USERNAME:tracking_user}
+    password: ${DB_PASSWORD:tracking_password}
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+
+  redis:
+    host: ${REDIS_HOST:localhost}
+    port: ${REDIS_PORT:6379}
+    password: ${REDIS_PASSWORD:}
+
+  rabbitmq:
+    host: ${RABBITMQ_HOST:localhost}
+    port: ${RABBITMQ_PORT:5672}
+    username: ${RABBITMQ_USERNAME:guest}
+    password: ${RABBITMQ_PASSWORD:guest}
+
+logging:
+  level:
+    com.swiftlogistics.tracking: INFO
+    org.springframework.web.socket: WARN

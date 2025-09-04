@@ -18,6 +18,11 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+
 @Service
 @Transactional
 public class OrderService {
@@ -157,6 +162,70 @@ public class OrderService {
         return orders.stream()
                 .map(this::mapToOrderResponse)
                 .collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
+    public List<OrderResponse> getAllOrders(int page, int size, String sortBy, String sortDirection) {
+        logger.debug("Fetching all orders with pagination: page={}, size={}, sortBy={}, sortDirection={}",
+                page, size, sortBy, sortDirection);
+
+        try {
+            // Create sort object
+            Sort sort = Sort.by(Sort.Direction.fromString(sortDirection),
+                    sortBy != null ? sortBy : "createdAt");
+
+            // Create pageable object
+            Pageable pageable = PageRequest.of(page, size, sort);
+
+            // Fetch orders with pagination
+            Page<Order> ordersPage = orderRepository.findAll(pageable);
+
+            // Convert to response DTOs
+            return ordersPage.getContent().stream()
+                    .map(this::mapToOrderResponse)
+                    .collect(Collectors.toList());
+
+        } catch (Exception e) {
+            logger.error("Error fetching all orders: {}", e.getMessage(), e);
+            throw new RuntimeException("Failed to fetch orders: " + e.getMessage());
+        }
+    }
+
+    // Method 2: Simple get all orders (without pagination) - Alternative option
+    @Transactional(readOnly = true)
+    public List<OrderResponse> getAllOrders() {
+        logger.debug("Fetching all orders");
+
+        try {
+            List<Order> orders = orderRepository.findAllByOrderByCreatedAtDesc();
+            return orders.stream()
+                    .map(this::mapToOrderResponse)
+                    .collect(Collectors.toList());
+
+        } catch (Exception e) {
+            logger.error("Error fetching all orders: {}", e.getMessage(), e);
+            throw new RuntimeException("Failed to fetch orders: " + e.getMessage());
+        }
+    }
+
+
+    // Method 3: Get orders with limit (for performance)
+    @Transactional(readOnly = true)
+    public List<OrderResponse> getRecentOrders(int limit) {
+        logger.debug("Fetching {} recent orders", limit);
+
+        try {
+            Pageable pageable = PageRequest.of(0, limit, Sort.by(Sort.Direction.DESC, "createdAt"));
+            Page<Order> ordersPage = orderRepository.findAll(pageable);
+
+            return ordersPage.getContent().stream()
+                    .map(this::mapToOrderResponse)
+                    .collect(Collectors.toList());
+
+        } catch (Exception e) {
+            logger.error("Error fetching recent orders: {}", e.getMessage(), e);
+            throw new RuntimeException("Failed to fetch recent orders: " + e.getMessage());
+        }
     }
 
     private OrderResponse mapToOrderResponse(Order order) {
